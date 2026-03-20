@@ -1,0 +1,99 @@
+# =========================
+# SISTEMA / EDITOR
+# =========================
+.DS_Store
+Thumbs.db
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+.idea/
+*.swp
+*.swo
+
+# =========================
+# LOGS
+# =========================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# DEPENDENCIAS
+# =========================
+node_modules/
+vendor/
+
+# =========================
+# BUILD / DIST
+# =========================
+dist/
+build/
+public/build/
+coverage/
+
+# =========================
+# LARAVEL
+# =========================
+backend/vendor/
+backend/node_modules/
+backend/public/build/
+backend/public/hot
+backend/storage/*.key
+backend/storage/app/public
+backend/storage/debugbar
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*.php
+
+# Mantener la carpeta si existe un .gitignore dentro
+!backend/storage/framework/cache/.gitignore
+!backend/storage/framework/sessions/.gitignore
+!backend/storage/framework/views/.gitignore
+
+# =========================
+# FRONTEND
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.nuxt/
+frontend/.vite/
+
+# =========================
+# ARCHIVOS TEMPORALES
+# =========================
+*.tmp
+*.temp
+*.bak
+*.old
+
+# =========================
+# TESTS / REPORTES
+# =========================
+.phpunit.result.cache
+coverage/
+.nyc_output/
+
+# =========================
+# CACHE GENERAL
+# =========================
+.cache/
+.parcel-cache/
