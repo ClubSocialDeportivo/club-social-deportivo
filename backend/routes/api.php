@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\TorneoController; // <-- Aquí importamos tu controlador
 
 Route::get('/test-db', function() {
     DB::table('users') -> insert ([
@@ -22,3 +23,6 @@ Route::get('/test-db', function() {
 //         'mensaje' => 'API funcionando correctamente'
 //     ]);
 // });
+
+// --- RUTAS DEL MÓDULO DE TORNEOS (CM3-11) ---
+Route::get('/torneos', [TorneoController::class, 'index']);
