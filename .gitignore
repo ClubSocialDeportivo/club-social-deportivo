@@ -97,3 +97,5 @@ coverage/
 # =========================
 .cache/
 .parcel-cache/
+
+backend/bootstrap/cache/*.php
