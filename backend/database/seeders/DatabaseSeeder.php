@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // 1. Crea el usuario de prueba por defecto de Laravel
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+
+        // 2. Llama a tu Seeder de Torneos para inyectar tus datos (CM3-11)
+        $this->call([
+            TorneoSeeder::class,
         ]);
     }
 }
