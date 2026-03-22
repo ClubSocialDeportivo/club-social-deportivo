@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
+use App\Http\Controllers\InscripcionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,3 +65,12 @@ Route::get('/test-insert', function () {
 
     return response()->json(['mensaje' => 'Insertado correctamente']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO INSCRIPCIONES (SOCIOS Y EXTERNOS)
+|--------------------------------------------------------------------------
+*/
+
+// Ruta para que el Frontend inscriba jugadores automáticamente
+Route::post('/inscripciones', [InscripcionController::class, 'store']);
