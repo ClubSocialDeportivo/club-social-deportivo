@@ -1,20 +1,26 @@
 <?php
 
-namespace App\Models;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Seeder;
+use App\Models\SedeExterna;
 
-class SedeExterna extends Model
+class SedeExternaSeeder extends Seeder
 {
-    use HasFactory;
+    public function run(): void
+    {
+        SedeExterna::create([
+            'nombre_sede' => 'Unidad Deportiva Bicentenario',
+            'direccion' => 'Av. Torreón Nuevo s/n',
+            'contacto_responsable' => 'Carlos López',
+            'telefono_contacto' => '4431112233'
+        ]);
 
-    protected $table = 'sedes_externas';
-
-    protected $fillable = [
-        'nombre_sede',
-        'direccion',
-        'contacto_responsable',
-        'telefono_contacto',
-    ];
+        SedeExterna::create([
+            'nombre_sede' => 'Club de Golf Altozano',
+            'direccion' => 'Paseo del Altozano #55',
+            'contacto_responsable' => 'María Fernández',
+            'telefono_contacto' => '4439998877'
+        ]);
+    }
 }
