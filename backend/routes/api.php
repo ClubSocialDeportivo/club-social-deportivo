@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
+use App\Http\Controllers\Api\InstalacionesController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -48,3 +51,19 @@ Route::apiResource('socios', SocioController::class);
 */
 
 Route::get('/torneos', [TorneoController::class, 'index']);
+
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE INSTALACIONES
+|--------------------------------------------------------------------------
+*/
+
+
+
+
+Route::get('/instalaciones', [InstalacionesController::class, 'index']);
+
+Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
+
+Route::put('/instalaciones/{id}', [App\Http\Controllers\Api\InstalacionesController::class, 'update']);
