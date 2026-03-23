@@ -30,7 +30,31 @@ class InstalacionesController extends Controller
         ]);
     }
 
-  
+    public function getCategories()
+    {
+        return response()->json(\App\Models\CatArea::all());
+    }
+
+    public function store(Request $request) {
+    $validated = $request->validate([
+        'id_categoria' => 'required|exists:cat_areas,id_categoria',
+        'nombre_especifico' => 'required|string|max:120',
+        'ubicacion' => 'nullable|string|max:120',
+        'tipo_superficie' => 'nullable|string|max:80',
+        'capacidad_max' => 'required|integer|min:1',
+        'horario_apertura' => 'nullable',
+        'horario_cierre' => 'nullable',
+        'equipamiento' => 'nullable|string',
+        'estatus' => 'required|string',
+        'permite_reserva' => 'required|boolean'
+    ]);
+
+    $instalacion = \App\Models\Instalaciones::create($validated);
+    
+    return response()->json(['status' => 'success', 'data' => $instalacion]);
+}
+
+
 
 
     public function update(Request $request, $id)

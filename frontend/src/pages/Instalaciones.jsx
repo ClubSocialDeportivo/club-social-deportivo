@@ -8,13 +8,20 @@ import {
   Trash2,
   Eye,
   Hammer,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  RefreshCw
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import FacilityDetailsModal from "../components/FacilityDetailsModal";
 import EditFacilityModal from "../components/EditFacilityModal";
+import AddFacilityModal from "../components/AddFacilityModal";
 
 const Facilities = () => {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
   // Estados del modal de ver detalles
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,7 +40,35 @@ const Facilities = () => {
   const buttonRefs = useRef({});
 
   const [facilities, setFacilities] = useState([]);
+
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [loading, setLoading] = useState(true);
+
+  // Función para cambiar la dirección del orden (de A-Z a Z-A)
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // useMemo hace que este cálculo solo ocurra cuando la lista o el orden cambien (ahorra RAM)
+  const sortedFacilities = useMemo(() => {
+    let sortableItems = [...facilities]; // Hacemos una copia de la lista original
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        // Manejamos si el dato no existe para que no de error
+        const valA = a[sortConfig.key] || "";
+        const valB = b[sortConfig.key] || "";
+
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [facilities, sortConfig]);
 
   const getFacilities = async () => {
     try {
@@ -68,6 +103,13 @@ const Facilities = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenModal = () => setIsAddModalOpen(true);
+    window.addEventListener("open-add-facility-modal", handleOpenModal);
+    return () =>
+      window.removeEventListener("open-add-facility-modal", handleOpenModal);
   }, []);
 
   // Función mejorada de toggle con cálculo de coordenadas y límites de viewport
@@ -178,18 +220,44 @@ const Facilities = () => {
         <div className="lw-full bg-[#14171c] rounded-xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800 flex justify-between items-center">
             <h2 className="text-xl font-bold">Directorio de Instalaciones</h2>
-            <button className="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded-md transition-colors">
-              Ver todos
+            <button
+              onClick={getFacilities}
+              title="Actualizar tabla"
+              className="p-2 bg-gray-800 hover:bg-yellow-500/20 hover:text-yellow-400 text-gray-400 rounded-lg border border-gray-700 hover:border-yellow-500/50 transition-all duration-200"
+            >
+              <RefreshCw size={15} />
             </button>
+          
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-500 text-xs uppercase tracking-wider border-b border-gray-800">
-                  <th className="px-6 py-4 font-medium">Instalación</th>
-                  <th className="px-6 py-4 font-medium">Tipo</th>
-                  <th className="px-6 py-4 font-medium">Capacidad</th>
-                  <th className="px-6 py-4 font-medium">Estatus</th>
+                  <SortableHeader
+                    label="Instalación"
+                    sortKey="nombre_especifico"
+                    currentSort={sortConfig}
+                    requestSort={requestSort}
+                  />
+                  <SortableHeader
+                    label="Tipo"
+                    sortKey="tipo_superficie"
+                    currentSort={sortConfig}
+                    requestSort={requestSort}
+                  />
+                  <SortableHeader
+                    label="Capacidad"
+                    sortKey="capacidad_max"
+                    currentSort={sortConfig}
+                    requestSort={requestSort}
+                  />
+                  <SortableHeader
+                    
+                    label="Estatus"
+                    sortKey="estatus"
+                    currentSort={sortConfig}
+                    requestSort={requestSort}
+                  />
                   <th className="px-6 py-4 font-medium">Acciones</th>
                 </tr>
               </thead>
@@ -201,7 +269,7 @@ const Facilities = () => {
                     </td>
                   </tr>
                 ) : (
-                  facilities.map((f) => (
+                  sortedFacilities.map((f) => (
                     <tr
                       key={f.id_espacio}
                       className="hover:bg-gray-800/50 transition-colors"
@@ -271,6 +339,11 @@ const Facilities = () => {
           getFacilities();
         }}
       />
+      <AddFacilityModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onRefresh={getFacilities}
+      />
     </div>
   );
 };
@@ -285,6 +358,33 @@ const StatCard = ({ title, value, icon, color }) => (
     </div>
   </div>
 );
+
+const SortableHeader = ({ label, sortKey, currentSort, requestSort }) => {
+  const isActive = currentSort.key === sortKey;
+  return (
+    <th
+      className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-800/50 transition-colors group select-none"
+      onClick={() => requestSort(sortKey)}
+    >
+      <div className="flex items-center space-x-2">
+        <span>{label}</span>
+        <span
+          className={`${isActive ? "text-yellow-400" : "text-gray-600 group-hover:text-gray-400"} transition-colors`}
+        >
+          {isActive ? (
+            currentSort.direction === "asc" ? (
+              <ChevronUp size={14} />
+            ) : (
+              <ChevronDown size={14} />
+            )
+          ) : (
+            <ArrowUpDown size={14} />
+          )}
+        </span>
+      </div>
+    </th>
+  );
+};
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -358,19 +458,6 @@ const ActionMenuPortal = ({
           setFacilityToEdit(facility);
           setIsEditModalOpen(true);
         }}
-      />
-      <MenuOption
-        icon={<Hammer size={16} />}
-        label="Mantenimiento"
-        onClick={() => console.log("Mantenimiento", facility.id)}
-        color="text-yellow-400"
-      />
-      <hr className="border-gray-800 my-1" />
-      <MenuOption
-        icon={<Trash2 size={16} />}
-        label="Eliminar"
-        onClick={() => console.log("Eliminar", facility.id)}
-        color="text-red-500"
       />
     </div>,
     document.body,

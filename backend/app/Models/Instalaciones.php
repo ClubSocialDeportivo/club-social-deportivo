@@ -21,9 +21,11 @@ class Instalaciones extends Model
         'ubicacion',
         'tipo_superficie',
         'capacidad_max',
-        'estatus',
         'horario_apertura',
-        'horario_cierre'
+        'horario_cierre',
+        'equipamiento',
+        'estatus',
+        'permite_reserva'
     ];
 
     public function agendas()

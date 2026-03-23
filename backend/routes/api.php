@@ -67,3 +67,7 @@ Route::get('/instalaciones', [InstalacionesController::class, 'index']);
 Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
 
 Route::put('/instalaciones/{id}', [App\Http\Controllers\Api\InstalacionesController::class, 'update']);
+
+Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
+
+Route::post('/instalaciones', [InstalacionesController::class, 'store']);
