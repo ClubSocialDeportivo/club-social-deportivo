@@ -49,18 +49,18 @@ Route::apiResource('socios', SocioController::class);
 
 Route::get('/torneos', [TorneoController::class, 'index']);
 
-Route::get('/test-insert', function () {
-    DB::table('tbl_socios')->insert([
-        'nombre' => 'Bryan',
-        'apellidos' => 'Mendoza',
-        'fecha_nacimiento' => '2002-01-01',
-        'genero' => 'Masculino',
-        'tipo_membresia' => 'Accionista',
-        'modalidad' => 'Individual',
-        'estatus_financiero' => 'Vigente',
-        'created_at' => now(),
-        'updated_at' => now()
-    ]);
+// Route::get('/test-insert', function () {
+//     DB::table('tbl_socios')->insert([
+//         'nombre' => 'Bryan',
+//         'apellidos' => 'Mendoza',
+//         'fecha_nacimiento' => '2002-01-01',
+//         'genero' => 'Masculino',
+//         'tipo_membresia' => 'Accionista',
+//         'modalidad' => 'Individual',
+//         'estatus_financiero' => 'Vigente',
+//         'created_at' => now(),
+//         'updated_at' => now()
+//     ]);
 
-    return response()->json(['mensaje' => 'Insertado correctamente']);
-});
+//     return response()->json(['mensaje' => 'Insertado correctamente']);
+// });
