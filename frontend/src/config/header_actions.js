@@ -19,15 +19,10 @@ export const headerActions = {
     { 
       label: "Nuevo Recurso", 
       icon: PlusCircle, 
-      action: () => console.log("Nuevo recurso..."),
+      action: () => window.dispatchEvent(new CustomEvent('open-add-facility-modal')),
       color: "bg-yellow-400 text-black" 
-    },
-    { 
-      label: "Exportar PDF", 
-      icon: Download, 
-      action: () => console.log("Descargando..."),
-      color: "bg-gray-800 text-white border border-gray-700" 
     }
+    
   ],
   // Si una ruta no está aquí, no aparecerán botones extra.
 };

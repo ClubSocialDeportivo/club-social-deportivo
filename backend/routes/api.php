@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
-use Illuminate\Http\JsonResponse;
+
+use App\Http\Controllers\Api\InstalacionesController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +56,27 @@ Route::get('/titulares', [SocioController::class, 'titulares']);
 
 Route::get('/torneos', [TorneoController::class, 'index']);
 
+
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE INSTALACIONES
+|--------------------------------------------------------------------------
+*/
+
+
+
+
+Route::get('/instalaciones', [InstalacionesController::class, 'index']);
+
+Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
+
+Route::put('/instalaciones/{id}', [App\Http\Controllers\Api\InstalacionesController::class, 'update']);
+
+Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
+
+Route::post('/instalaciones', [InstalacionesController::class, 'store']);
+
 // Route::get('/test-insert', function () { 
 //     DB::table('tbl_socios')->insert([
 //         'nombre' => 'Bryan',
@@ -69,3 +92,4 @@ Route::get('/torneos', [TorneoController::class, 'index']);
 
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
 // });
+
