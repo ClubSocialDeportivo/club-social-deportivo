@@ -3,15 +3,17 @@ import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Socios from "./pages/Socios";
 import Instalaciones from "./pages/Instalaciones";
+import Dependientes from "./pages/Dependientes";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/Instalaciones" element={<Instalaciones />} />
-          <Route path="/Socios" element={<Socios />} />
+          <Route index element={<Dashboard />} />
+          <Route path="/instalaciones" element={<Instalaciones />} />
+          <Route path="/socios" element={<Socios />} />
+          <Route path="/dependientes" element={<Dependientes />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

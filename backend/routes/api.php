@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
+use Illuminate\Http\JsonResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,10 @@ Route::get('/test', function () {
 */
 
 Route::apiResource('socios', SocioController::class);
+Route::patch('/socios/{id}/activar', [SocioController::class, 'activarMembresia']);
+
+Route::get('/dependientes', [SocioController::class, 'dependientes']);
+Route::get('/titulares', [SocioController::class, 'titulares']);
 
 /*
 |--------------------------------------------------------------------------
@@ -49,7 +54,7 @@ Route::apiResource('socios', SocioController::class);
 
 Route::get('/torneos', [TorneoController::class, 'index']);
 
-// Route::get('/test-insert', function () {
+// Route::get('/test-insert', function () { 
 //     DB::table('tbl_socios')->insert([
 //         'nombre' => 'Bryan',
 //         'apellidos' => 'Mendoza',

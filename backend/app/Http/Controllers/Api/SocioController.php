@@ -43,11 +43,11 @@ class SocioController extends Controller
                 Rule::in(['Masculino', 'Femenino', 'Otro', 'No especifica']),
             ],
             'tipo_membresia' => [
-                'required',
+                'nullable',
                 Rule::in(['Accionista', 'Rentista']),
             ],
             'modalidad' => [
-                'required',
+                'nullable',
                 Rule::in(['Individual', 'Familiar']),
             ],
             'numero_documento' => 'nullable|string|max:80',
@@ -68,26 +68,39 @@ class SocioController extends Controller
 
         if ($validated['es_titular'] === true) {
             $validated['id_titular_fk'] = null;
+
+            if (
+                isset($validated['tipo_membresia']) &&
+                $validated['tipo_membresia'] === 'Rentista' &&
+                empty($validated['fecha_fin_vigencia'])
+            ) {
+                return response()->json([
+                    'message' => 'Los socios Rentista deben tener fecha_fin_vigencia.',
+                ], 422);
+            }
         }
 
-        if (
-            isset($validated['tipo_membresia']) &&
-            $validated['tipo_membresia'] === 'Rentista' &&
-            empty($validated['fecha_fin_vigencia'])
-        ) {
-            return response()->json([
-                'message' => 'Los socios Rentista deben tener fecha_fin_vigencia.',
-            ], 422);
-        }
+        if ($validated['es_titular'] === false) {
+            if (empty($validated['id_titular_fk'])) {
+                return response()->json([
+                    'message' => 'Si el socio no es titular, debes enviar id_titular_fk.',
+                ], 422);
+            }
 
-        if (
-            isset($validated['es_titular']) &&
-            $validated['es_titular'] === false &&
-            empty($validated['id_titular_fk'])
-        ) {
-            return response()->json([
-                'message' => 'Si el socio no es titular, debes enviar id_titular_fk.',
-            ], 422);
+            $titular = Socio::find($validated['id_titular_fk']);
+
+            if (!$titular) {
+                return response()->json([
+                    'message' => 'El titular seleccionado no existe.',
+                ], 422);
+            }
+
+            $validated['tipo_membresia'] = $titular->tipo_membresia;
+            $validated['modalidad'] = $titular->modalidad;
+            $validated['estatus_financiero'] = $titular->estatus_financiero;
+            $validated['fecha_inicio_vigencia'] = $titular->fecha_inicio_vigencia;
+            $validated['fecha_fin_vigencia'] = $titular->fecha_fin_vigencia;
+            $validated['activo'] = $titular->activo;
         }
 
         $socio = Socio::create($validated);
@@ -146,26 +159,23 @@ class SocioController extends Controller
                 Rule::in(['Masculino', 'Femenino', 'Otro', 'No especifica']),
             ],
             'tipo_membresia' => [
-                'sometimes',
-                'required',
+                'nullable',
                 Rule::in(['Accionista', 'Rentista']),
             ],
             'modalidad' => [
-                'sometimes',
-                'required',
+                'nullable',
                 Rule::in(['Individual', 'Familiar']),
             ],
             'numero_documento' => 'nullable|string|max:80',
             'fecha_inicio_vigencia' => 'nullable|date',
             'fecha_fin_vigencia' => 'nullable|date',
             'estatus_financiero' => [
-                'sometimes',
-                'required',
+                'nullable',
                 Rule::in(['Vigente', 'Inactivo', 'Adeudo', 'Suspendido']),
             ],
             'es_titular' => 'sometimes|required|boolean',
             'id_titular_fk' => 'nullable|integer|exists:tbl_socios,id_socio',
-            'activo' => 'sometimes|required|boolean',
+            'activo' => 'nullable|boolean',
         ]);
 
         if (array_key_exists('es_titular', $validated) && $validated['es_titular'] === true) {
@@ -177,22 +187,69 @@ class SocioController extends Controller
         $esTitularFinal = $validated['es_titular'] ?? $socio->es_titular;
         $titularFinal = $validated['id_titular_fk'] ?? $socio->id_titular_fk;
 
-        if ($tipoMembresiaFinal === 'Rentista' && empty($fechaFinFinal)) {
-            return response()->json([
-                'message' => 'Los socios Rentista deben tener fecha_fin_vigencia.',
-            ], 422);
+        if ($esTitularFinal === true) {
+            if ($tipoMembresiaFinal === 'Rentista' && empty($fechaFinFinal)) {
+                return response()->json([
+                    'message' => 'Los socios Rentista deben tener fecha_fin_vigencia.',
+                ], 422);
+            }
         }
 
-        if ($esTitularFinal === false && empty($titularFinal)) {
-            return response()->json([
-                'message' => 'Si el socio no es titular, debes enviar id_titular_fk.',
-            ], 422);
+        if ($esTitularFinal === false) {
+            if (empty($titularFinal)) {
+                return response()->json([
+                    'message' => 'Si el socio no es titular, debes enviar id_titular_fk.',
+                ], 422);
+            }
+
+            $titular = Socio::find($titularFinal);
+
+            if (!$titular) {
+                return response()->json([
+                    'message' => 'El titular seleccionado no existe.',
+                ], 422);
+            }
+
+            $validated['tipo_membresia'] = $titular->tipo_membresia;
+            $validated['modalidad'] = $titular->modalidad;
+            $validated['estatus_financiero'] = $titular->estatus_financiero;
+            $validated['fecha_inicio_vigencia'] = $titular->fecha_inicio_vigencia;
+            $validated['fecha_fin_vigencia'] = $titular->fecha_fin_vigencia;
+            $validated['activo'] = $titular->activo;
+            $validated['es_titular'] = false;
+            $validated['id_titular_fk'] = $titular->id_socio;
         }
 
         $socio->update($validated);
 
         return response()->json([
             'message' => 'Socio actualizado correctamente',
+            'data' => $socio->fresh(),
+        ], 200);
+    }
+
+    public function activarMembresia(string $id): JsonResponse
+    {
+        $socio = Socio::find($id);
+
+        if (!$socio) {
+            return response()->json([
+                'message' => 'Socio no encontrado',
+            ], 404);
+        }
+
+        $fechaInicio = now()->toDateString();
+        $fechaFin = now()->addYear()->toDateString();
+
+        $socio->update([
+            'estatus_financiero' => 'Vigente',
+            'activo' => true,
+            'fecha_inicio_vigencia' => $fechaInicio,
+            'fecha_fin_vigencia' => $fechaFin,
+        ]);
+
+        return response()->json([
+            'message' => 'Membresía activada correctamente',
             'data' => $socio->fresh(),
         ], 200);
     }
@@ -214,6 +271,34 @@ class SocioController extends Controller
 
         return response()->json([
             'message' => 'Socio eliminado correctamente',
+        ], 200);
+    }
+
+    public function dependientes(): JsonResponse
+    {
+        $dependientes = Socio::where('es_titular', false)
+            ->orderByDesc('id_socio')
+            ->get();
+
+        return response()->json([
+            'message' => 'Lista de dependientes obtenida correctamente',
+            'data' => $dependientes,
+        ], 200);
+    }
+
+    public function titulares(): JsonResponse
+    {
+        $titulares = Socio::where('es_titular', true)
+            ->where(function ($query) {
+                $query->where('activo', true)
+                      ->orWhereNull('activo');
+            })
+            ->orderBy('nombre')
+            ->get(['id_socio', 'nombre', 'apellidos', 'activo', 'estatus_financiero']);
+
+        return response()->json([
+            'message' => 'Lista de titulares obtenida correctamente',
+            'data' => $titulares,
         ], 200);
     }
 }
