@@ -1,9 +1,30 @@
-import { LayoutDashboard, Users, Building2, CalendarDays, Receipt, Settings } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Building2, 
+  UserRound 
+} from "lucide-react";
 
-// Esta es la "fuente de verdad". Si alguien quiere una página nueva, solo agrega un objeto aquí.
+// Fuente central de navegación
 export const MenuItems = [
-  { title: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { title: "Instalaciones", icon: Building2, path: "/instalaciones" },
-  {title: "Socios", icon: Users, path: "/socios" },
-  
+  {
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    path: "/",
+  },
+  {
+    title: "Instalaciones",
+    icon: Building2,
+    path: "/instalaciones",
+  },
+  {
+    title: "Socios",
+    icon: Users,
+    path: "/socios",
+  },
+  {
+    title: "Dependientes",
+    icon: UserRound,
+    path: "/dependientes",
+  },
 ];

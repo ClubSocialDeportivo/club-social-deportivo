@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
-use App\Http\Controllers\Api\InstalacionesController;
 
+use App\Http\Controllers\Api\InstalacionesController;
 
 
 /*
@@ -43,6 +43,10 @@ Route::get('/test', function () {
 */
 
 Route::apiResource('socios', SocioController::class);
+Route::patch('/socios/{id}/activar', [SocioController::class, 'activarMembresia']);
+
+Route::get('/dependientes', [SocioController::class, 'dependientes']);
+Route::get('/titulares', [SocioController::class, 'titulares']);
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +55,7 @@ Route::apiResource('socios', SocioController::class);
 */
 
 Route::get('/torneos', [TorneoController::class, 'index']);
+
 
 
 /*
@@ -71,3 +76,20 @@ Route::put('/instalaciones/{id}', [App\Http\Controllers\Api\InstalacionesControl
 Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
 
 Route::post('/instalaciones', [InstalacionesController::class, 'store']);
+
+// Route::get('/test-insert', function () { 
+//     DB::table('tbl_socios')->insert([
+//         'nombre' => 'Bryan',
+//         'apellidos' => 'Mendoza',
+//         'fecha_nacimiento' => '2002-01-01',
+//         'genero' => 'Masculino',
+//         'tipo_membresia' => 'Accionista',
+//         'modalidad' => 'Individual',
+//         'estatus_financiero' => 'Vigente',
+//         'created_at' => now(),
+//         'updated_at' => now()
+//     ]);
+
+//     return response()->json(['mensaje' => 'Insertado correctamente']);
+// });
+
