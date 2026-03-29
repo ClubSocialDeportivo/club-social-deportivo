@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Socios from "./pages/Socios";
 import Instalaciones from "./pages/Instalaciones";
 import Dependientes from "./pages/Dependientes";
+import Actividades from "./pages/Actividades";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/socios" element={<Socios />} />
           <Route path="/dependientes" element={<Dependientes />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/Actividades" element={<Actividades />} ></Route>
         </Route>
       </Routes>
     </BrowserRouter>

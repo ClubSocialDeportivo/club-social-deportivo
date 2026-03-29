@@ -2,7 +2,8 @@ import {
   LayoutDashboard, 
   Users, 
   Building2, 
-  UserRound 
+  UserRound,
+  NotebookPen 
 } from "lucide-react";
 
 // Fuente central de navegación
@@ -27,4 +28,9 @@ export const MenuItems = [
     icon: UserRound,
     path: "/dependientes",
   },
+  {
+    title: "Agenda y Reservaciones",
+    icon: NotebookPen,
+    path: "/Actividades",
+  }
 ];
