@@ -95,12 +95,26 @@ class SocioController extends Controller
                 ], 422);
             }
 
+            if ($titular->es_titular !== true) {
+                return response()->json([
+                    'message' => 'El socio seleccionado como titular no es un titular válido.',
+                ], 422);
+            }
+
+            if (($titular->modalidad ?? null) !== 'Familiar') {
+                return response()->json([
+                    'message' => 'No puedes registrar dependientes para un titular con modalidad Individual.',
+                ], 422);
+            }
+
             $validated['tipo_membresia'] = $titular->tipo_membresia;
             $validated['modalidad'] = $titular->modalidad;
             $validated['estatus_financiero'] = $titular->estatus_financiero;
             $validated['fecha_inicio_vigencia'] = $titular->fecha_inicio_vigencia;
             $validated['fecha_fin_vigencia'] = $titular->fecha_fin_vigencia;
             $validated['activo'] = $titular->activo;
+            $validated['es_titular'] = false;
+            $validated['id_titular_fk'] = $titular->id_socio;
         }
 
         $socio = Socio::create($validated);
@@ -210,6 +224,18 @@ class SocioController extends Controller
                 ], 422);
             }
 
+            if ($titular->es_titular !== true) {
+                return response()->json([
+                    'message' => 'El socio seleccionado como titular no es un titular válido.',
+                ], 422);
+            }
+
+            if (($titular->modalidad ?? null) !== 'Familiar') {
+                return response()->json([
+                    'message' => 'No puedes asignar un dependiente a un titular con modalidad Individual.',
+                ], 422);
+            }
+
             $validated['tipo_membresia'] = $titular->tipo_membresia;
             $validated['modalidad'] = $titular->modalidad;
             $validated['estatus_financiero'] = $titular->estatus_financiero;
@@ -289,12 +315,20 @@ class SocioController extends Controller
     public function titulares(): JsonResponse
     {
         $titulares = Socio::where('es_titular', true)
+            ->where('modalidad', 'Familiar')
             ->where(function ($query) {
                 $query->where('activo', true)
-                      ->orWhereNull('activo');
+                    ->orWhereNull('activo');
             })
             ->orderBy('nombre')
-            ->get(['id_socio', 'nombre', 'apellidos', 'activo', 'estatus_financiero']);
+            ->get([
+                'id_socio',
+                'nombre',
+                'apellidos',
+                'activo',
+                'estatus_financiero',
+                'modalidad',
+            ]);
 
         return response()->json([
             'message' => 'Lista de titulares obtenida correctamente',
