@@ -1,12 +1,12 @@
-import { X, Calendar, Clock, Users, MapPin, Activity, Package, ToggleLeft, CheckCircle, XCircle, Hash } from "lucide-react";
+import { X, Calendar, Clock, Users, MapPin, Activity, Package, ToggleLeft, CheckCircle, XCircle, Hash, Trophy } from "lucide-react";
 import InfoBox from "../components/InfoBox";
 
 const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
   if (!isOpen || !data) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
 
         {/* Header */}
         <div className="p-6 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-[#1c1f26] z-10">
@@ -17,7 +17,6 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
                 <p className="text-gray-500 text-sm flex items-center gap-1">
                   <Hash size={12}/> ID: {data.id_espacio}
                 </p>
-                {/* Estatus badge en el header */}
                 <StatusBadge status={data.estatus} />
               </div>
             </div>
@@ -36,9 +35,8 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
             <InfoBox icon={<Activity size={18}/>} label="Superficie" value={data.tipo_superficie || 'Estándar'} />
           </div>
 
-          {/* Horario + Permite Reserva — NUEVO: en la misma fila */}
+          {/* Horario + Permite Reserva */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
               <h3 className="text-xs font-bold uppercase text-gray-500 mb-3 flex items-center gap-2">
                 <Clock size={14}/> Horario de Operación
@@ -60,7 +58,6 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
               )}
             </div>
 
-            {/* Permite Reserva — NUEVO */}
             <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
               <h3 className="text-xs font-bold uppercase text-gray-500 mb-3 flex items-center gap-2">
                 <ToggleLeft size={14}/> Permite Reserva
@@ -83,7 +80,7 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
             </div>
           </div>
 
-          {/* Equipamiento — NUEVO */}
+          {/* Equipamiento */}
           <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
             <h3 className="text-xs font-bold uppercase text-gray-500 mb-3 flex items-center gap-2">
               <Package size={14}/> Equipamiento
@@ -93,17 +90,19 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
             </p>
           </div>
 
-          {/* Metadatos — NUEVO: timestamps de la BD */}
+          {/* Metadatos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetaField label="Fecha de Registro" value={formatDate(data.created_at)} />
             <MetaField label="Última Actualización" value={formatDate(data.updated_at)} />
           </div>
 
-          {/* Agendas y Reservas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Agendas, Reservas y TORNEOS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-gray-800 pt-6 mt-6">
+            
+            {/* 1. Agendas Próximas */}
             <div>
               <h3 className="text-lg font-bold mb-4 flex items-center">
-                <Calendar size={20} className="mr-2 text-blue-400"/> Agendas Próximas
+                <Calendar size={20} className="mr-2 text-blue-400"/> Agendas
               </h3>
               <div className="space-y-2">
                 {data.agendas?.length > 0 ? data.agendas.map(a => (
@@ -111,13 +110,14 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
                     <p className="font-bold text-white">Sesión #{a.id_sesion}</p>
                     <p className="text-gray-400">{a.fecha} | {a.hora_inicio}</p>
                   </div>
-                )) : <p className="text-gray-500 text-sm italic">No hay agendas programadas.</p>}
+                )) : <p className="text-gray-500 text-sm italic">Sin agendas.</p>}
               </div>
             </div>
 
+            {/* 2. Reservas Activas */}
             <div>
               <h3 className="text-lg font-bold mb-4 flex items-center">
-                <Activity size={20} className="mr-2 text-green-400"/> Reservas Activas
+                <Activity size={20} className="mr-2 text-green-400"/> Reservas
               </h3>
               <div className="space-y-2">
                 {data.reservas?.length > 0 ? data.reservas.map(r => (
@@ -126,9 +126,32 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
                     <p className="text-gray-400">{r.fecha} | {r.hora_inicio}</p>
                     <span className="text-[10px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded uppercase">{r.estatus}</span>
                   </div>
-                )) : <p className="text-gray-500 text-sm italic">No hay reservas para este espacio.</p>}
+                )) : <p className="text-gray-500 text-sm italic">Sin reservas.</p>}
               </div>
             </div>
+
+            {/* 3. Torneos Activos */}
+            <div>
+              <h3 className="text-lg font-bold mb-4 flex items-center">
+                <Trophy size={20} className="mr-2 text-yellow-400"/> Torneos
+              </h3>
+              <div className="space-y-2">
+                {data.torneos?.length > 0 ? data.torneos.map(t => (
+                  <div key={t.id_torneo} className="p-3 bg-yellow-400/10 rounded-lg text-sm border-l-4 border-yellow-500 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 opacity-10"><Trophy size={48} /></div>
+                    <p className="font-bold text-yellow-400">{t.nombre_torneo}</p>
+                    <p className="text-gray-300 mt-1">🗓️ Inicia: {t.fecha_inicio}</p>
+                    <p className="text-gray-300">🏁 Termina: {t.fecha_fin}</p>
+                    <div className="mt-2">
+                      <span className="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded uppercase font-bold">
+                        Bloqueo por Torneo
+                      </span>
+                    </div>
+                  </div>
+                )) : <p className="text-gray-500 text-sm italic">Cancha libre de torneos.</p>}
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -136,8 +159,6 @@ const FacilityDetailsModal = ({ isOpen, onClose, data }) => {
     </div>
   );
 };
-
-// --- Sub-componentes ---
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -160,7 +181,6 @@ const MetaField = ({ label, value }) => (
   </div>
 );
 
-// Formatea los timestamps de Postgres a algo legible
 const formatDate = (isoString) => {
   if (!isoString) return "No disponible";
   return new Date(isoString).toLocaleString("es-MX", {
