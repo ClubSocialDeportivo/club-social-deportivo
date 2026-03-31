@@ -4,9 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
-
 use App\Http\Controllers\Api\InstalacionesController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -54,9 +52,8 @@ Route::get('/titulares', [SocioController::class, 'titulares']);
 |--------------------------------------------------------------------------
 */
 
-Route::get('/torneos', [TorneoController::class, 'index']);
-
-
+//GET, POST, PUT y DELETE automáticamente
+Route::apiResource('torneos', TorneoController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -64,17 +61,10 @@ Route::get('/torneos', [TorneoController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 
-
-
-
 Route::get('/instalaciones', [InstalacionesController::class, 'index']);
-
 Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
-
-Route::put('/instalaciones/{id}', [App\Http\Controllers\Api\InstalacionesController::class, 'update']);
-
+Route::put('/instalaciones/{id}', [InstalacionesController::class, 'update']);
 Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
-
 Route::post('/instalaciones', [InstalacionesController::class, 'store']);
 
 // Route::get('/test-insert', function () { 
@@ -92,4 +82,3 @@ Route::post('/instalaciones', [InstalacionesController::class, 'store']);
 
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
 // });
-
