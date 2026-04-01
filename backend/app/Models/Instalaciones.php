@@ -3,16 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Torneo; // Importamos tu modelo para que lo reconozca
 
 class Instalaciones extends Model
 {
-    // Nombre de la tabla en Supabase
     protected $table = 'tbl_instalaciones';
-
-    // Tu llave primaria no se llama "id", se llama "id_espacio"
     protected $primaryKey = 'id_espacio';
-
-    // Para que Laravel no intente buscar columnas de "created_at"
     public $timestamps = false;
 
     protected $fillable = [
@@ -36,5 +32,11 @@ class Instalaciones extends Model
     public function reservas()
     {
         return $this->hasMany(Reservas::class, 'id_espacio', 'id_espacio');
+    }
+
+    // EL CONECTE MAESTRO A TUS TORNEOS
+    public function torneos()
+    {
+        return $this->hasMany(Torneo::class, 'sede_principal', 'id_espacio');
     }
 }
