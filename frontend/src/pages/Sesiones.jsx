@@ -10,8 +10,8 @@ import {
   Activity,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-//import AgendaDetailsModal  from "../components/AgendaDetailsModal";
-//import ReservaDetailsModal from "../components/ReservaDetailsModal";
+import AgendaDetailsModal  from "../components/Agendadeatilsmodal";
+import ReservaDetailsModal from "../components/ReservaDetailsModal";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -347,7 +347,7 @@ const Sesiones = () => {
         </div>
       </div>
 
-      {/* ── Modales ── 
+       
       <AgendaDetailsModal
         isOpen={isAgendaDetailOpen}
         onClose={() => setIsAgendaDetailOpen(false)}
@@ -357,7 +357,7 @@ const Sesiones = () => {
         isOpen={isReservaDetailOpen}
         onClose={() => setIsReservaDetailOpen(false)}
         data={selectedReserva}
-      />*/}
+      />
     </div>
   );
 };
