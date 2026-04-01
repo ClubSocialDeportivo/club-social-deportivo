@@ -2,7 +2,8 @@ import {
   LayoutDashboard, 
   Users, 
   Building2, 
-  UserRound 
+  UserRound,
+  CalendarDays 
 } from "lucide-react";
 
 // Fuente central de navegación
@@ -26,5 +27,10 @@ export const MenuItems = [
     title: "Dependientes",
     icon: UserRound,
     path: "/dependientes",
+  },
+  {
+    title: "Sesiones",
+    icon: CalendarDays,
+    path: "/sesiones",
   },
 ];
