@@ -40,7 +40,9 @@ export const MenuItems = [
   {
     title: "Instructores",
     path: "/instructores",
-    icon: Users, // Aquí usas el componente del icono
+    icon: Users, 
+  },
+  {
     title: "Agenda y Reservaciones",
     icon: NotebookPen,
     path: "/Actividades",
