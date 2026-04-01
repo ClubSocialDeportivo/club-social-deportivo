@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Api\InstructorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,3 +70,10 @@ Route::get('/torneos', [TorneoController::class, 'index']);
 
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
 // });
+
+/*
+------------------------------------------------------------------------------
+| MÓDULO INSTRUCTORES
+------------------------------------------------------------------------------
+*/
+Route::apiResource('instructors', InstructorController::class);

@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Socios from "./pages/Socios";
 import Instalaciones from "./pages/Instalaciones";
 import Dependientes from "./pages/Dependientes";
+import Instructores from "./pages/Instructores";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/instalaciones" element={<Instalaciones />} />
           <Route path="/socios" element={<Socios />} />
           <Route path="/dependientes" element={<Dependientes />} />
+          <Route path="/instructores" element={<Instructores />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

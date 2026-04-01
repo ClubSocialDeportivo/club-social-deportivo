@@ -27,4 +27,9 @@ export const MenuItems = [
     icon: UserRound,
     path: "/dependientes",
   },
+  {
+    title: "Instructores",
+    path: "/instructores",
+    icon: Users, // Aquí usas el componente del icono
+  },
 ];
