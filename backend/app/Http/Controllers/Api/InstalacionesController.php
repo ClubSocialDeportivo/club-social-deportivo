@@ -10,19 +10,19 @@ class InstalacionesController extends Controller
 {
     public function index()
     {
-        // Obtenemos todo de Supabase
-        $datos = Instalaciones::all();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $datos
-        ]);
+        // MAGIA: Ahora la tabla principal sabrá si la cancha tiene un torneo activo
+        $datos = Instalaciones::with(['torneos'])->get();
+        return response()->json(['status' => 'success', 'data' => $datos]);
     }
 
     public function show($id)
     {
-        // El "with" carga automáticamente las agendas y reservas relacionadas
-        $instalacion = Instalaciones::with(['agendas', 'reservas'])->findOrFail($id);
+        try {
+            $instalacion = Instalaciones::with(['agendas', 'reservas', 'torneos'])->findOrFail($id);
+        } catch (\Exception $e) {
+            $instalacion = Instalaciones::with(['agendas', 'reservas'])->findOrFail($id);
+            $instalacion->torneos = [];
+        }
 
         return response()->json([
             'status' => 'success',
@@ -36,38 +36,27 @@ class InstalacionesController extends Controller
     }
 
     public function store(Request $request) {
-    $validated = $request->validate([
-        'id_categoria' => 'required|exists:cat_areas,id_categoria',
-        'nombre_especifico' => 'required|string|max:120',
-        'ubicacion' => 'nullable|string|max:120',
-        'tipo_superficie' => 'nullable|string|max:80',
-        'capacidad_max' => 'required|integer|min:1',
-        'horario_apertura' => 'nullable',
-        'horario_cierre' => 'nullable',
-        'equipamiento' => 'nullable|string',
-        'estatus' => 'required|string',
-        'permite_reserva' => 'required|boolean'
-    ]);
+        $validated = $request->validate([
+            'id_categoria' => 'required|exists:cat_areas,id_categoria',
+            'nombre_especifico' => 'required|string|max:120',
+            'ubicacion' => 'nullable|string|max:120',
+            'tipo_superficie' => 'nullable|string|max:80',
+            'capacidad_max' => 'required|integer|min:1',
+            'horario_apertura' => 'nullable',
+            'horario_cierre' => 'nullable',
+            'equipamiento' => 'nullable|string',
+            'estatus' => 'required|string',
+            'permite_reserva' => 'required|boolean'
+        ]);
 
-    $instalacion = \App\Models\Instalaciones::create($validated);
-    
-    return response()->json(['status' => 'success', 'data' => $instalacion]);
-}
-
-
-
+        $instalacion = Instalaciones::create($validated);
+        return response()->json(['status' => 'success', 'data' => $instalacion]);
+    }
 
     public function update(Request $request, $id)
     {
-        // 1. Buscamos la instalación
         $instalacion = Instalaciones::findOrFail($id);
-
-        // 2. Actualizamos con los datos que vienen del formulario
         $instalacion->update($request->all());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Instalación actualizada correctamente'
-        ]);
+        return response()->json(['status' => 'success', 'message' => 'Instalación actualizada correctamente']);
     }
 }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClubManager 360 - Lista de Torneos</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #f0f0f0; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #3498db; margin-bottom: 30px; }
+        table { border-collapse: collapse; width: 80%; margin: 0 auto; background-color: #2c3e50; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #34495e; }
+        th { background-color: #2980b9; color: white; text-transform: uppercase; font-size: 14px; }
+        tr:hover { background-color: #34495e; transition: 0.3s; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-edit { background-color: #f1c40f; color: #000; }
+        .btn-delete { background-color: #e74c3c; color: #fff; }
+        .btn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <h1>ClubManager 360 - Módulo de Torneos (API Test)</h1>
+    <div id="torneos-container">
+        <p>Conectando con Supabase...</p>
+    </div>
+
+    <script>
+        function accionSimulada(accion, id) {
+            alert(`✅ La ruta del Backend para ${accion} el torneo con ID ${id} ya está lista para que el Frontend la conecte.`);
+        }
+
+        fetch('http://127.0.0.1:8000/api/torneos')
+            .then(response => response.json())
+            .then(json => {
+                const container = document.getElementById('torneos-container');
+                const torneos = json.data;
+
+                if (!torneos || torneos.length === 0) {
+                    container.innerHTML = '<p>No hay torneos registrados.</p>';
+                } else {
+                    let tableHtml = '<table><tr><th>ID</th><th>Nombre del Torneo</th><th>Categoría</th><th>Sede</th><th>Acciones (Backend)</th></tr>';
+                    torneos.forEach(torneo => {
+                        tableHtml += `<tr>
+                            <td>${torneo.id_torneo}</td>
+                            <td><strong>${torneo.nombre_torneo}</strong></td>
+                            <td>${torneo.categoria}</td>
+                            <td>${torneo.sede_principal}</td>
+                            <td>
+                                <button class="btn btn-edit" onclick="accionSimulada('EDITAR', ${torneo.id_torneo})">Editar</button>
+                                <button class="btn btn-delete" onclick="accionSimulada('ELIMINAR', ${torneo.id_torneo})">Eliminar</button>
+                            </td>
+                        </tr>`;
+                    });
+                    tableHtml += '</table>';
+                    container.innerHTML = tableHtml;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>

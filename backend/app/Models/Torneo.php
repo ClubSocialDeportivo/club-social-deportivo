@@ -9,11 +9,9 @@ class Torneo extends Model
 {
     use HasFactory;
 
-    // Conectamos con la nueva tabla de Bryan
     protected $table = 'tbl_torneos';
     protected $primaryKey = 'id_torneo';
 
-    // Los nuevos campos obligatorios
     protected $fillable = [
         'id_disciplina', 
         'nombre_torneo', 
@@ -24,4 +22,19 @@ class Torneo extends Model
         'fecha_inicio', 
         'fecha_fin'
     ];
+
+    public function encuentros()
+    {
+        return $this->hasMany(Encuentro::class, 'torneo_id', 'id_torneo');
+    }
+
+    public function participantes()
+    {
+        return $this->hasMany(JugadorTemporal::class, 'id_torneo', 'id_torneo');
+    }
+
+    public function sede()
+    {
+        return $this->belongsTo(Instalaciones::class, 'sede_principal', 'id_espacio');
+    }
 }

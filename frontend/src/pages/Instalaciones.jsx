@@ -11,7 +11,8 @@ import {
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
-  RefreshCw
+  RefreshCw,
+  Trophy
 } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -84,6 +85,7 @@ const Facilities = () => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     getFacilities();
   }, []);
@@ -274,23 +276,27 @@ const Facilities = () => {
                       key={f.id_espacio}
                       className="hover:bg-gray-800/50 transition-colors"
                     >
-                      {/* Usamos f.nombre_especifico en lugar de f.name */}
                       <td className="px-6 py-4 font-medium">
                         {f.nombre_especifico}
                       </td>
 
-                      {/* Usamos f.tipo_superficie en lugar de f.type */}
                       <td className="px-6 py-4 text-sm text-gray-400">
                         {f.tipo_superficie || "No definida"}
                       </td>
 
-                      {/* Usamos f.capacidad_max */}
                       <td className="px-6 py-4 text-sm">
                         {f.capacidad_max} pax
                       </td>
 
                       <td className="px-6 py-4">
-                        <StatusBadge status={f.estatus} />
+                        {/* AQUI ESTA LA MAGIA: Si tiene torneos, ignora el status normal y pinta la medalla amarilla */}
+                        {f.torneos && f.torneos.length > 0 ? (
+                          <span className="px-2 py-1 rounded-md text-[11px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 flex items-center w-max gap-1">
+                            <Trophy size={12} /> TORNEO ACTIVO
+                          </span>
+                        ) : (
+                          <StatusBadge status={f.estatus} />
+                        )}
                       </td>
 
                       <td className="px-6 py-4 relative">
@@ -321,8 +327,6 @@ const Facilities = () => {
             </table>
           </div>
         </div>
-
-        {/* 3. Panel de Detalles (Ocupa 1 columna) */}
       </div>
       <FacilityDetailsModal
         isOpen={isModalOpen}
@@ -395,7 +399,7 @@ const StatusBadge = ({ status }) => {
   };
   return (
     <span
-      className={`px-2 py-1 rounded-md text-xs font-bold ${styles[status]}`}
+      className={`px-2 py-1 rounded-md text-[11px] font-bold ${styles[status]}`}
     >
       {status}
     </span>
@@ -420,10 +424,6 @@ const MenuOption = ({ icon, label, onClick, color = "text-gray-300" }) => (
   </button>
 );
 
-/**
- * Componente Portal para renderizar el menú en document.body
- * Detecta si sale del viewport y se reposiciona automáticamente
- */
 const ActionMenuPortal = ({
   facility,
   position,
