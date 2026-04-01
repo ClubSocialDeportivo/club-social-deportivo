@@ -3,6 +3,8 @@ import {
   Users, 
   Building2, 
   UserRound,
+  NotebookPen, 
+  CalendarDays, 
   Trophy,
   BellRing
 } from "lucide-react";
@@ -34,6 +36,15 @@ export const MenuItems = [
     title: "Dependientes",
     icon: UserRound,
     path: "/dependientes",
+  },
+  {
+    title: "Agenda y Reservaciones",
+    icon: NotebookPen,
+    path: "/Actividades",
+  },{
+    title: "Sesiones",
+    icon: CalendarDays,
+    path: "/sesiones",
   },
   {
     title: "Torneos",       
