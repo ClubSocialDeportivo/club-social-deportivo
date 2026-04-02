@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\LudotecaController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
@@ -54,6 +55,14 @@ Route::apiResource('torneos', TorneoController::class);
 
 /*
 |--------------------------------------------------------------------------
+| MÓDULO LUDOTECA
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/ludoteca/ingreso', [LudotecaController::class, 'registrarIngreso']);
+
+/*
+|--------------------------------------------------------------------------
 | MÓDULO DE INSTALACIONES
 |--------------------------------------------------------------------------
 */
@@ -92,11 +101,13 @@ Route::get('/reservas/{id}',    [ReservasController::class, 'show']);
 Route::post('/reservas',        [ReservasController::class, 'store']);
 Route::put('/reservas/{id}',    [ReservasController::class, 'update']);
 Route::delete('/reservas/{id}', [ReservasController::class, 'destroy']);
-Route::get('/instalaciones', [InstalacionesController::class, 'index']);
-Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
-Route::put('/instalaciones/{id}', [InstalacionesController::class, 'update']);
-Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
-Route::post('/instalaciones', [InstalacionesController::class, 'store']);
+
+/*
+------------------------------------------------------------------------------
+| MÓDULO INSTRUCTORES
+------------------------------------------------------------------------------
+*/
+Route::apiResource('instructors', InstructorController::class);
 
 // Route::get('/test-insert', function () { 
 //     DB::table('tbl_socios')->insert([
@@ -110,8 +121,8 @@ Route::post('/instalaciones', [InstalacionesController::class, 'store']);
 //         'created_at' => now(),
 //         'updated_at' => now()
 //     ]);
-
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
+// });
 // });
 
 /*
