@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\InstalacionesController;
 use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\ReservasController;
@@ -111,3 +113,10 @@ Route::post('/instalaciones', [InstalacionesController::class, 'store']);
 
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
 // });
+
+/*
+------------------------------------------------------------------------------
+| MÓDULO INSTRUCTORES
+------------------------------------------------------------------------------
+*/
+Route::apiResource('instructors', InstructorController::class);

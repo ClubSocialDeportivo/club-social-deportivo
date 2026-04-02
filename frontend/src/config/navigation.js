@@ -38,6 +38,11 @@ export const MenuItems = [
     path: "/dependientes",
   },
   {
+    title: "Instructores",
+    path: "/instructores",
+    icon: Users, 
+  },
+  {
     title: "Agenda y Reservaciones",
     icon: NotebookPen,
     path: "/Actividades",

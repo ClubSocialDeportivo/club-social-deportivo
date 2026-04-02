@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Socios from "./pages/Socios";
 import Instalaciones from "./pages/Instalaciones";
 import Dependientes from "./pages/Dependientes";
+import Instructores from "./pages/Instructores";
 import Actividades from "./pages/Actividades";
 import Sesiones from "./pages/Sesiones";
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/recepcion" element={<Recepcion />} />
           <Route path="/socios" element={<Socios />} />
           <Route path="/dependientes" element={<Dependientes />} />
+          <Route path="/instructores" element={<Instructores />} />
           <Route path="/torneos" element={<Torneos />} /> {/* <-- Aquí agregamos la ruta */}
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/Actividades" element={<Actividades />} ></Route>

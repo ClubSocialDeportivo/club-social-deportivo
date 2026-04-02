@@ -35,4 +35,19 @@ export const headerActions = {
       color: "bg-yellow-400 text-black",
     },
   ],
+
+  "/instructores": [
+  {
+    label: "Nuevo Instructor",
+    icon: UserPlus,
+    action: () => {
+      // Disparamos el evento que Instructores.jsx está escuchando
+      const evento = new CustomEvent('abrir-modal-instructor');
+      window.dispatchEvent(evento);
+    },
+    color: "bg-[#FACC15] text-black" // Usando el amarillo de tu diseño
+  },
+],
+  // Si una ruta no está aquí, no aparecerán botones extra.
+
 };
