@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\LudotecaController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
@@ -55,6 +56,16 @@ Route::get('/titulares', [SocioController::class, 'titulares']);
 //GET, POST, PUT y DELETE automáticamente
 Route::apiResource('torneos', TorneoController::class);
 
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO LUDOTECA
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/ludoteca/ingreso', [LudotecaController::class, 'registrarIngreso']);
+
+
 /*
 |--------------------------------------------------------------------------
 | MÓDULO DE INSTALACIONES
@@ -66,19 +77,3 @@ Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
 Route::put('/instalaciones/{id}', [InstalacionesController::class, 'update']);
 Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
 Route::post('/instalaciones', [InstalacionesController::class, 'store']);
-
-// Route::get('/test-insert', function () { 
-//     DB::table('tbl_socios')->insert([
-//         'nombre' => 'Bryan',
-//         'apellidos' => 'Mendoza',
-//         'fecha_nacimiento' => '2002-01-01',
-//         'genero' => 'Masculino',
-//         'tipo_membresia' => 'Accionista',
-//         'modalidad' => 'Individual',
-//         'estatus_financiero' => 'Vigente',
-//         'created_at' => now(),
-//         'updated_at' => now()
-//     ]);
-
-//     return response()->json(['mensaje' => 'Insertado correctamente']);
-// });
