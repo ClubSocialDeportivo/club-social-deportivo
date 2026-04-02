@@ -1,5 +1,5 @@
 import { X, CheckCircle, Clock, Users, Plus, Save, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const AsistenciasModal = ({ sesion, onClose }) => {
   const [asistencias, setAsistencias] = useState([]);
@@ -10,12 +10,7 @@ const AsistenciasModal = ({ sesion, onClose }) => {
   const [saving,      setSaving]      = useState(false);
   const [error,       setError]       = useState("");
 
-  useEffect(() => {
-    fetchAsistencias();
-    fetchSocios();
-  }, []);
-
-  const fetchAsistencias = async () => {
+  const fetchAsistencias = useCallback(async () => {
     setLoading(true);
     try {
       const res    = await fetch(`http://localhost:8000/api/asistencias/sesion/${sesion.id_sesion}`, {
@@ -25,15 +20,20 @@ const AsistenciasModal = ({ sesion, onClose }) => {
       if (result.status === "success") setAsistencias(result.data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
-  };
+  }, [sesion.id_sesion]);
 
-  const fetchSocios = async () => {
+  const fetchSocios = useCallback(async () => {
     try {
       const res    = await fetch("http://localhost:8000/api/socios", { headers: { Accept: "application/json" } });
       const result = await res.json();
       if (result.data) setSocios(result.data);
     } catch (err) { console.error(err); }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAsistencias();
+    fetchSocios();
+  }, [fetchAsistencias, fetchSocios]);
 
   const handleRegistrar = async () => {
     if (!socioId) return;
