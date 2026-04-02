@@ -123,3 +123,28 @@ Route::apiResource('instructors', InstructorController::class);
 //     ]);
 //     return response()->json(['mensaje' => 'Insertado correctamente']);
 // });
+// });
+
+/*
+------------------------------------------------------------------------------
+| MÓDULO INSTRUCTORES
+------------------------------------------------------------------------------
+*/
+Route::apiResource('instructors', InstructorController::class);
+
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE ASISTENCIAS
+|--------------------------------------------------------------------------
+*/
+ 
+use App\Http\Controllers\Api\AsistenciasController;
+ 
+// IMPORTANTE: la ruta /sesion/{id} debe ir ANTES de /{id}
+// para que Laravel no confunda "sesion" con un ID numérico
+Route::get('/asistencias/sesion/{id_sesion}', [AsistenciasController::class, 'porSesion']);
+ 
+Route::get('/asistencias',        [AsistenciasController::class, 'index']);
+Route::post('/asistencias',       [AsistenciasController::class, 'store']);
+Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
