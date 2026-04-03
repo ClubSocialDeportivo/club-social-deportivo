@@ -89,7 +89,7 @@ const Recepcion = () => {
             if (id === '18') nombreEncontrado = 'Kevin Manuel Rosario Berrospe';
             if (id === '17') nombreEncontrado = 'Javier Solares';
             if (id === '12') nombreEncontrado = 'José Manriquez';
-            if (id === '08') nombreEncontrado = 'Niño de Prueba'; // Modifica este si quieres un nombre específico
+            if (id === '08') nombreEncontrado = 'Niño de Prueba';
 
             if (tipo === 'nino') {
                 setNombreNino(nombreEncontrado);
@@ -98,7 +98,7 @@ const Recepcion = () => {
                 setNombreTutor(nombreEncontrado);
                 setBuscandoTutor(false);
             }
-        }, 800); // 800ms de retraso para que se vea real
+        }, 800);
     };
 
 
@@ -217,7 +217,8 @@ const Recepcion = () => {
                                 const datos = { id_nino: formData.get('id_nino'), id_tutor: formData.get('id_tutor') };
                                 
                                 try {
-                                    const res = await fetch('http://127.0.0.1:8000/api/ludoteca/ingreso', {
+                                    // AQUÍ ESTÁ EL CAMBIO A LOCALHOST
+                                    const res = await fetch('http://localhost:8000/api/ludoteca/ingreso', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                                         body: JSON.stringify(datos)
