@@ -62,6 +62,11 @@ const Socios = () => {
   const [createFormData, setCreateFormData] = useState(initialCreateForm);
   const [savingCreate, setSavingCreate] = useState(false);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterMembresia, setFilterMembresia] = useState("");
+  const [filterModalidad, setFilterModalidad] = useState("");
+  const [filterEstatus, setFilterEstatus] = useState("");
+
   const fetchSocios = async () => {
     const res = await fetch(API_URL, {
       headers: {
@@ -108,6 +113,21 @@ const Socios = () => {
       setLoading(false);
     }
   };
+
+  const sociosFiltrados = useMemo(() => {
+    return socios.filter((s) => {
+      const matchesSearch = !searchTerm || 
+        s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.id_socio.toString().includes(searchTerm);
+
+      const matchesMembresia = !filterMembresia || s.tipo_membresia === filterMembresia;
+      const matchesModalidad = !filterModalidad || s.modalidad === filterModalidad;
+      const matchesEstatus = !filterEstatus || s.estatus_financiero === filterEstatus;
+
+      return matchesSearch && matchesMembresia && matchesModalidad && matchesEstatus;
+    });
+  }, [socios, searchTerm, filterMembresia, filterModalidad, filterEstatus]);
 
   useEffect(() => {
     cargarTodo();
@@ -380,23 +400,21 @@ const Socios = () => {
   }, [dependientes]);
 
   const stats = useMemo(() => {
-    const total = socios.length;
-    const vigentes = socios.filter(
+    const total = sociosFiltrados.length;
+    const vigentes = sociosFiltrados.filter(
       (s) => (s.estatus_financiero || "").toLowerCase() === "vigente"
     ).length;
 
-    const inactivos = socios.filter((s) =>
-      ["inactivo", "suspendido", "adeudo"].includes(
-        (s.estatus_financiero || "").toLowerCase()
-      )
+    const inactivos = sociosFiltrados.filter((s) =>
+      ["inactivo", "suspendido", "adeudo"].includes((s.estatus_financiero || "").toLowerCase())
     ).length;
 
-    const rentistas = socios.filter(
+    const rentistas = sociosFiltrados.filter(
       (s) => (s.tipo_membresia || "").toLowerCase() === "rentista"
     ).length;
 
     return { total, vigentes, inactivos, rentistas };
-  }, [socios]);
+  }, [sociosFiltrados]);
 
   const getStatusBadge = (status) => {
     const normalized = (status || "").toLowerCase();
@@ -499,6 +517,57 @@ const Socios = () => {
             )}
           </div>
 
+          <div className="grid grid-cols-1 gap-4 border-b border-gray-800 px-6 py-4 md:grid-cols-4">
+            {/* Búsqueda por texto (Ya existente, muévela aquí) */}
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                <UserRoundSearch size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder="Nombre o ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-xl border border-gray-700 bg-[#0f131a] py-2 pl-10 pr-4 text-sm text-white outline-none focus:border-yellow-400"
+              />
+            </div>
+
+            {/* Filtro Membresía */}
+            <select
+              value={filterMembresia}
+              onChange={(e) => setFilterMembresia(e.target.value)}
+              className="rounded-xl border border-gray-700 bg-[#0f131a] px-3 py-2 text-sm text-white outline-none focus:border-yellow-400"
+            >
+              <option value="">Todas las Membresías</option>
+              <option value="Accionista">Accionista</option>
+              <option value="Rentista">Rentista</option>
+            </select>
+
+            {/* Filtro Modalidad */}
+            <select
+              value={filterModalidad}
+              onChange={(e) => setFilterModalidad(e.target.value)}
+              className="rounded-xl border border-gray-700 bg-[#0f131a] px-3 py-2 text-sm text-white outline-none focus:border-yellow-400"
+            >
+              <option value="">Todas las Modalidades</option>
+              <option value="Individual">Individual</option>
+              <option value="Familiar">Familiar</option>
+            </select>
+
+            {/* Filtro Estatus */}
+            <select
+              value={filterEstatus}
+              onChange={(e) => setFilterEstatus(e.target.value)}
+              className="rounded-xl border border-gray-700 bg-[#0f131a] px-3 py-2 text-sm text-white outline-none focus:border-yellow-400"
+            >
+              <option value="">Todos los Estatus</option>
+              <option value="Vigente">Vigente</option>
+              <option value="Adeudo">Adeudo</option>
+              <option value="Inactivo">Inactivo</option>
+              <option value="Suspendido">Suspendido</option>
+            </select>
+          </div>
+
           <button
             onClick={cargarTodo}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-700 bg-[#1b2130] text-gray-300 transition hover:border-gray-600 hover:text-white"
@@ -560,7 +629,7 @@ const Socios = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-800">
-                {socios.map((socio) => {
+                {sociosFiltrados.map((socio) => {
                   const cantidadDependientes =
                     dependientesPorTitular[socio.id_socio] || 0;
 
