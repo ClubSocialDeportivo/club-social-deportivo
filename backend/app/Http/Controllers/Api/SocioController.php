@@ -11,11 +11,19 @@ use Illuminate\Validation\Rule;
 class SocioController extends Controller
 {
     /**
-     * Lista todos los socios.
+     * Lista todos los socios con opción de búsqueda.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $socios = Socio::orderBy('id_socio', 'desc')->get();
+        $queryText = $request->query('query');
+
+        $socios = Socio::when($queryText, function ($query, $search) {
+            return $query->where('nombre', 'LIKE', "%{$search}%")
+                         ->orWhere('apellidos', 'LIKE', "%{$search}%")
+                         ->orWhere('id_socio', $search);
+        })
+        ->orderBy('id_socio', 'desc')
+        ->get();
 
         return response()->json([
             'message' => 'Lista de socios obtenida correctamente',
