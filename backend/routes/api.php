@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\InstalacionesController;
 use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\ReservasController;
+use App\Http\Controllers\Api\AsistenciasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,7 @@ Route::apiResource('socios', SocioController::class);
 Route::patch('/socios/{id}/activar', [SocioController::class, 'activarMembresia']);
 Route::get('/dependientes', [SocioController::class, 'dependientes']);
 Route::get('/titulares',    [SocioController::class, 'titulares']);
+Route::get('/socios/{id}/verificar-acceso', [SocioController::class, 'verificarAcceso']);
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +52,6 @@ Route::get('/titulares',    [SocioController::class, 'titulares']);
 */
 
 Route::get('/torneos', [TorneoController::class, 'index']);
-//GET, POST, PUT y DELETE automáticamente
 Route::apiResource('torneos', TorneoController::class);
 
 /*
@@ -79,11 +80,9 @@ Route::get('/categorias',          [InstalacionesController::class, 'getCategori
 |--------------------------------------------------------------------------
 */
 
-// Catálogos para los selects del frontend (ANTES de las rutas con {id})
 Route::get('/agenda/catalogo/disciplinas',  [AgendaController::class, 'getDisciplinas']);
 Route::get('/agenda/catalogo/instructores', [AgendaController::class, 'getInstructores']);
 
-// CRUD principal
 Route::get('/agenda',        [AgendaController::class, 'index']);
 Route::get('/agenda/{id}',   [AgendaController::class, 'show']);
 Route::post('/agenda',       [AgendaController::class, 'store']);
@@ -109,42 +108,13 @@ Route::delete('/reservas/{id}', [ReservasController::class, 'destroy']);
 */
 Route::apiResource('instructors', InstructorController::class);
 
-// Route::get('/test-insert', function () { 
-//     DB::table('tbl_socios')->insert([
-//         'nombre' => 'Bryan',
-//         'apellidos' => 'Mendoza',
-//         'fecha_nacimiento' => '2002-01-01',
-//         'genero' => 'Masculino',
-//         'tipo_membresia' => 'Accionista',
-//         'modalidad' => 'Individual',
-//         'estatus_financiero' => 'Vigente',
-//         'created_at' => now(),
-//         'updated_at' => now()
-//     ]);
-//     return response()->json(['mensaje' => 'Insertado correctamente']);
-// });
-// });
-
-/*
-------------------------------------------------------------------------------
-| MÓDULO INSTRUCTORES
-------------------------------------------------------------------------------
-*/
-Route::apiResource('instructors', InstructorController::class);
-
-
 /*
 |--------------------------------------------------------------------------
 | MÓDULO DE ASISTENCIAS
 |--------------------------------------------------------------------------
 */
  
-use App\Http\Controllers\Api\AsistenciasController;
- 
-// IMPORTANTE: la ruta /sesion/{id} debe ir ANTES de /{id}
-// para que Laravel no confunda "sesion" con un ID numérico
 Route::get('/asistencias/sesion/{id_sesion}', [AsistenciasController::class, 'porSesion']);
- 
 Route::get('/asistencias',        [AsistenciasController::class, 'index']);
 Route::post('/asistencias',       [AsistenciasController::class, 'store']);
 Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
