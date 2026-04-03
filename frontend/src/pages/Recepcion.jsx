@@ -89,6 +89,7 @@ const Recepcion = () => {
             if (id === '18') nombreEncontrado = 'Kevin Manuel Rosario Berrospe';
             if (id === '17') nombreEncontrado = 'Javier Solares';
             if (id === '12') nombreEncontrado = 'José Manriquez';
+            if (id === '08') nombreEncontrado = 'Niño de Prueba'; // Modifica este si quieres un nombre específico
 
             if (tipo === 'nino') {
                 setNombreNino(nombreEncontrado);
@@ -109,7 +110,7 @@ const Recepcion = () => {
 
     return (
         <div className="space-y-6 text-gray-200">
-            {/* ENCABEZADO Y NAVEGACIÓN (Ocultos para resumir el código, pero en tu app déjalos igual) */}
+            {/* ENCABEZADO Y NAVEGACIÓN */}
             <div className="flex justify-between items-center mb-4">
                 <div><h1 className="text-4xl font-extrabold text-white flex items-center gap-3">🛎️ Control de Recepción</h1><p className="text-gray-400 mt-2">Gestión de accesos, ludoteca y reservaciones</p></div>
                 <div className="flex items-center bg-[#1a1d23] border border-gray-800 rounded-xl px-4 py-3 w-96 focus-within:border-yellow-400 transition-colors shadow-lg"><Search className="text-gray-500 mr-3" size={20} /><input type="text" placeholder="Escanear o teclear ID..." className="bg-transparent border-none outline-none text-white w-full"/></div>
@@ -205,6 +206,11 @@ const Recepcion = () => {
                             <button onClick={() => {setModalLudoteca(false); setNombreNino(''); setNombreTutor('');}} className="text-gray-400 hover:text-white transition-colors"><X size={24}/></button>
                         </div>
                         
+                        <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-sm text-blue-400 mt-4 mb-4 flex gap-3">
+                            <span>ℹ️</span>
+                            <p>El sistema validará automáticamente que el menor tenga entre <strong>3 y 6 años</strong> de edad según el reglamento.</p>
+                        </div>
+                        
                         <form onSubmit={async (e) => {
                                 e.preventDefault();
                                 const formData = new FormData(e.target);
@@ -244,7 +250,7 @@ const Recepcion = () => {
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">ID Niño (Socio Dependiente)</label>
                                 <input 
-                                    type="number" name="id_nino" required 
+                                    type="number" name="id_nino" required placeholder="Ej. 1024"
                                     onChange={(e) => simularBusqueda(e.target.value, 'nino')}
                                     className="w-full bg-[#0f1115] border border-gray-700 rounded-lg p-3 text-white focus:border-yellow-400 outline-none" 
                                 />
@@ -262,7 +268,7 @@ const Recepcion = () => {
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">ID Tutor Responsable</label>
                                 <input 
-                                    type="number" name="id_tutor" required 
+                                    type="number" name="id_tutor" required placeholder="Ej. 1023"
                                     onChange={(e) => simularBusqueda(e.target.value, 'tutor')}
                                     className="w-full bg-[#0f1115] border border-gray-700 rounded-lg p-3 text-white focus:border-yellow-400 outline-none" 
                                 />
@@ -275,7 +281,7 @@ const Recepcion = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full font-bold text-lg py-4 rounded-xl mt-4 text-black bg-yellow-400 hover:bg-yellow-500 shadow-lg transition-all">Validar e Iniciar Estancia</button>
+                            <button type="submit" className="w-full font-bold text-lg py-4 rounded-xl mt-4 text-black bg-yellow-400 hover:bg-yellow-500 shadow-lg shadow-yellow-400/20 transition-all">Validar e Iniciar Estancia</button>
                         </form>
                     </div>
                 </div>
