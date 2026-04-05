@@ -6,7 +6,8 @@ import {
   NotebookPen, 
   CalendarDays, 
   Trophy,
-  BellRing
+  BellRing,
+  BellPlus
 } from "lucide-react";
 
 // Fuente central de navegación
@@ -55,5 +56,10 @@ export const MenuItems = [
     title: "Torneos",       
     icon: Trophy,          
     path: "/torneos",       
+  },
+  {
+    title: "Check-in",       
+    icon: BellPlus,          
+    path: "/check-in",       
   },
 ];
