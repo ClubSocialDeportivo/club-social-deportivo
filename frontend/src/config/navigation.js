@@ -1,12 +1,13 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
   UserRound,
-  NotebookPen, 
-  CalendarDays, 
+  NotebookPen,
+  CalendarDays,
   Trophy,
-  BellRing
+  BellRing,
+  Banknote,
 } from "lucide-react";
 
 // Fuente central de navegación
@@ -22,10 +23,10 @@ export const MenuItems = [
     path: "/instalaciones",
   },
   {
-    id: 'recepcion',
-    title: 'Recepción',
-    path: '/recepcion',
-    icon: BellRing
+    id: "recepcion",
+    title: "Recepción",
+    path: "/recepcion",
+    icon: BellRing,
   },
   {
     title: "Socios",
@@ -40,20 +41,24 @@ export const MenuItems = [
   {
     title: "Instructores",
     path: "/instructores",
-    icon: Users, 
+    icon: Users,
   },
   {
     title: "Agenda y Reservaciones",
     icon: NotebookPen,
     path: "/Actividades",
-  },{
+  },
+  {
     title: "Sesiones",
     icon: CalendarDays,
     path: "/sesiones",
   },
   {
-    title: "Torneos",       
-    icon: Trophy,          
-    path: "/torneos",       
+    title: "Torneos",
+    icon: Trophy,
+    path: "/torneos",
   },
+  { title: "Pagos",
+    icon: Banknote, 
+    path: "/pagos" },
 ];
