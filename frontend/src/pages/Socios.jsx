@@ -67,6 +67,10 @@ const Socios = () => {
   const [filterModalidad, setFilterModalidad] = useState("");
   const [filterEstatus, setFilterEstatus] = useState("");
 
+  const [activeMenu, setActiveMenu] = useState(null); // Para controlar qué menú de tres puntos está abierto
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingSocio, setViewingSocio] = useState(null);
+
   const fetchSocios = async () => {
     const res = await fetch(API_URL, {
       headers: {
@@ -686,39 +690,64 @@ const Socios = () => {
                         )}
                       </td>
 
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-2">
-                          {socio.es_titular === true &&
-                            socio.modalidad === "Familiar" && (
-                              <button
-                                onClick={() =>
-                                  handleAgregarDependiente(socio.id_socio)
-                                }
-                                className="inline-flex items-center gap-2 rounded-lg border border-violet-500/20 bg-violet-500/10 px-3 py-2 text-sm font-medium text-violet-300 transition hover:bg-violet-500/20"
-                              >
-                                <Users size={15} />
-                                Añadir dependiente
-                              </button>
-                            )}
+                      <td className="px-6 py-4 relative">
+                        {/* Botón de tres puntos */}
+                        <button 
+                          onClick={() => setActiveMenu(activeMenu === socio.id_socio ? null : socio.id_socio)}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition"
+                        >
+                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                        </button>
 
-                          <button
-                            onClick={() => openEditModal(socio)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-500/20"
-                          >
-                            <Pencil size={15} />
-                            Editar
-                          </button>
+                        {/* Menú Desplegable */}
+                        {activeMenu === socio.id_socio && (
+                          <>
+                            {/* Overlay invisible para cerrar el menú al hacer clic fuera */}
+                            <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)}></div>
+                            
+                            <div className="absolute right-10 top-0 z-20 mt-2 w-56 origin-top-right rounded-xl border border-gray-700 bg-[#1b2130] shadow-xl outline-none">
+                              <div className="py-2">
+                                <button
+                                  onClick={() => { setViewingSocio(socio); setShowViewModal(true); setActiveMenu(null); }}
+                                  className="flex w-full items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition"
+                                >
+                                  <UserRoundSearch size={16} className="mr-3 text-blue-400" />
+                                  Visualizar Información
+                                </button>
+                                
+                                <button
+                                  onClick={() => { openEditModal(socio); setActiveMenu(null); }}
+                                  className="flex w-full items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition"
+                                >
+                                  <Pencil size={16} className="mr-3 text-amber-400" />
+                                  Editar Socio
+                                </button>
 
-                          {socio.estatus_financiero !== "Vigente" && (
-                            <button
-                              onClick={() => handleActivarMembresia(socio.id_socio)}
-                              className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
-                            >
-                              <BadgeCheck size={15} />
-                              Activar
-                            </button>
-                          )}
-                        </div>
+                                {socio.es_titular && socio.modalidad === "Familiar" && (
+                                  <button
+                                    onClick={() => { handleAgregarDependiente(socio.id_socio); setActiveMenu(null); }}
+                                    className="flex w-full items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition"
+                                  >
+                                    <Users size={16} className="mr-3 text-violet-400" />
+                                    Añadir dependiente
+                                  </button>
+                                )}
+
+                                {socio.estatus_financiero !== "Vigente" && (
+                                  <button
+                                    onClick={() => { handleActivarMembresia(socio.id_socio); setActiveMenu(null); }}
+                                    className="flex w-full items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition"
+                                  >
+                                    <BadgeCheck size={16} className="mr-3 text-emerald-400" />
+                                    Activar Membresía
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </td>
                     </tr>
                   );
@@ -1064,6 +1093,76 @@ const Socios = () => {
           </div>
         </div>
       )}
+      {/* Modal de Visualización Detallada */}
+{showViewModal && viewingSocio && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
+    <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#14171c] p-8 shadow-2xl">
+      <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Ficha del Socio</h2>
+          <p className="text-sm text-gray-400">ID: {viewingSocio.id_socio}</p>
+        </div>
+        <button onClick={() => setShowViewModal(false)} className="text-gray-400 hover:text-white transition text-3xl">&times;</button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Información Personal */}
+        <div className="space-y-4 bg-[#0f131a] p-5 rounded-xl border border-gray-800">
+          <h3 className="text-blue-400 font-semibold flex items-center gap-2">
+            <Users size={18} /> Datos Personales
+          </h3>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest">Nombre Completo</p>
+            <p className="text-white font-medium">{viewingSocio.nombre} {viewingSocio.apellidos}</p>
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest mt-3">Género</p>
+            <p className="text-gray-300">{viewingSocio.genero}</p>
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest mt-3">Fecha de Nacimiento</p>
+            <p className="text-gray-300">{viewingSocio.fecha_nacimiento?.slice(0, 10)}</p>
+          </div>
+        </div>
+
+        {/* Detalles de Membresía */}
+        <div className="space-y-4 bg-[#0f131a] p-5 rounded-xl border border-gray-800">
+          <h3 className="text-yellow-400 font-semibold flex items-center gap-2">
+            <BadgeCheck size={18} /> Membresía
+          </h3>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest">Tipo / Modalidad</p>
+            <p className="text-white">{viewingSocio.tipo_membresia} - {viewingSocio.modalidad}</p>
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest mt-3">Estado Financiero</p>
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getStatusBadge(viewingSocio.estatus_financiero)}`}>
+              {viewingSocio.estatus_financiero}
+            </span>
+            <p className="text-sm text-gray-500 italic uppercase text-[10px] tracking-widest mt-3">Vigencia</p>
+            <p className="text-gray-300 text-sm">
+              {viewingSocio.fecha_inicio_vigencia?.slice(0, 10)} al {viewingSocio.fecha_fin_vigencia?.slice(0, 10) || 'N/A'}
+            </p>
+          </div>
+        </div>
+
+                {/* Registro de Asistencias (Marcador de posición) */}
+                <div className="bg-[#0f131a] p-5 rounded-xl border border-gray-800 flex flex-col">
+                  <h3 className="text-emerald-400 font-semibold flex items-center gap-2 mb-4">
+                    <RefreshCcw size={18} /> Historial Asistencias
+                  </h3>
+                  <div className="flex-1 flex flex-col items-center justify-center text-center border border-dashed border-gray-700 rounded-lg p-4">
+                    <CircleOff size={32} className="text-gray-700 mb-2" />
+                    <p className="text-xs text-gray-500 font-medium italic">No se encontraron registros de asistencias recientes.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={() => setShowViewModal(false)} 
+                  className="bg-gray-800 text-white px-8 py-2 rounded-lg hover:bg-gray-700 transition font-semibold"
+                >
+                  Cerrar Ficha
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };
