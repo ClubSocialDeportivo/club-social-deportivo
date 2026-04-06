@@ -1,16 +1,13 @@
-import { useState } from 'react';
-import { Search, CalendarDays, Baby, CreditCard, AlertTriangle, Clock, X, Edit, Trash2, CheckCircle2 } from 'lucide-react';
-
-const Recepcion = () => {
-    const [tabActiva, setTabActiva] = useState('reservas'); 
 import { useState, useEffect } from 'react';
-import { Search, CalendarDays, Baby, CreditCard, AlertTriangle, Clock, X, Edit, Trash2, CheckCircle2, UserCheck, Loader2 } from 'lucide-react';
+import { Search, CalendarDays, Baby, CreditCard, AlertTriangle, Clock, X, Edit, Trash2, CheckCircle2, UserCheck, Loader2, CheckCircle } from 'lucide-react';
 
 const Recepcion = () => {
-    const [tabActiva, setTabActiva] = useState('ludoteca');
-    const [modalLudoteca, setModalLudoteca] = useState(false);
+    // Pestaña por defecto
+    const [tabActiva, setTabActiva] = useState('ludoteca'); 
     
-    // --- ESTADOS PARA RESERVACIONES ---
+    // ==========================================
+    // 1. ESTADOS: RESERVACIONES
+    // ==========================================
     const [modalEditar, setModalEditar] = useState(false);
     const [reservaEditando, setReservaEditando] = useState(null);
 
@@ -20,39 +17,148 @@ const Recepcion = () => {
         { id: 'RES-003', socio: 'Kevin Rosario', espacio: 'Cancha de Tenis 1', fecha: '2026-04-03', horario: '08:00 - 10:00', estatus: 'Confirmada' },
     ]);
 
-    // Catálogo falso de instalaciones (Próximamente vendrá de Laravel)
     const catalogoInstalaciones = [
         "Cancha de Futbol Rápido", "Cancha Grande Super", "Cancha de Tenis 1", 
         "Cancha de Tenis 2", "Cancha de Basquetbol", "Alberca Olímpica", "Gimnasio Principal"
     ];
 
-    // --- FUNCIONES DE LOS BOTONES ---
-    const confirmarReserva = (id) => {
-        setReservas(reservas.map(res => res.id === id ? { ...res, estatus: 'Confirmada' } : res));
-    };
-
-    const eliminarReserva = (id) => {
-        if(window.confirm(`¿Estás seguro de cancelar la reserva ${id}?`)) {
-            setReservas(reservas.filter(res => res.id !== id));
-        }
-    };
-
-    const abrirModalEditar = (reserva) => {
-        setReservaEditando({ ...reserva }); // Hacemos una copia para editar sin romper la tabla
-        setModalEditar(true);
-    };
-
+    const confirmarReserva = (id) => setReservas(reservas.map(res => res.id === id ? { ...res, estatus: 'Confirmada' } : res));
+    const eliminarReserva = (id) => { if(window.confirm(`¿Estás seguro de cancelar la reserva ${id}?`)) setReservas(reservas.filter(res => res.id !== id)); };
+    const abrirModalEditar = (reserva) => { setReservaEditando({ ...reserva }); setModalEditar(true); };
     const guardarEdicion = (e) => {
         e.preventDefault();
-        // Actualizamos la tabla principal con los datos modificados
         setReservas(reservas.map(res => res.id === reservaEditando.id ? reservaEditando : res));
         setModalEditar(false);
         alert(`✅ Reserva ${reservaEditando.id} actualizada con éxito.`);
     };
 
+    // ==========================================
+    // 2. ESTADOS: LUDOTECA LIVE Y CONTROLES ADMIN
+    // ==========================================
+    const [modalLudoteca, setModalLudoteca] = useState(false);
+    const [horaActual, setHoraActual] = useState(Date.now());
+    
+    // Nuevo estado para el Modal de Tiempo
+    const [modalTiempo, setModalTiempo] = useState({ visible: false, id_socio: null });
+    const [minutosManual, setMinutosManual] = useState('');
+    
+    const obtenerNinosGuardados = () => {
+        const guardados = localStorage.getItem('ludoteca_ninos');
+        return guardados ? JSON.parse(guardados) : [];
+    };
+    const [ninosLudoteca, setNinosLudoteca] = useState(obtenerNinosGuardados);
+
+    useEffect(() => { localStorage.setItem('ludoteca_ninos', JSON.stringify(ninosLudoteca)); }, [ninosLudoteca]);
+    useEffect(() => { const intervalo = setInterval(() => setHoraActual(Date.now()), 1000); return () => clearInterval(intervalo); }, []);
+
+    const calcularTiempoYColor = (entradaIso) => {
+        const diff = Math.max(0, horaActual - new Date(entradaIso).getTime());
+        const horas = Math.floor(diff / (1000 * 60 * 60));
+        const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const formato = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        const minutosTotales = (horas * 60) + minutos;
+        
+        let colorClass = "text-green-400 bg-green-500/10 border-green-500/20"; let lineaLateral = "bg-green-500";
+        if (minutosTotales >= 120) { colorClass = "text-red-400 bg-red-500/10 border-red-500/20 animate-pulse"; lineaLateral = "bg-red-500 animate-pulse"; } 
+        else if (minutosTotales >= 105) { colorClass = "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"; lineaLateral = "bg-yellow-400"; }
+        return { formato, colorClass, lineaLateral };
+    };
+
+    // FUNCIONES ADMINISTRATIVAS DE LUDOTECA
+    const darSalida = async (id_socio) => { 
+        if(window.confirm(`¿Confirmar salida oficial en el sistema para socio #${id_socio}?`)) {
+            try {
+                const res = await fetch('http://localhost:8000/api/ludoteca/salida', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ id_nino: id_socio })
+                });
+                const data = await res.json();
+
+                if (res.status === 200 && data.status === 'success') {
+                    setNinosLudoteca(ninosLudoteca.filter(nino => nino.id_socio !== id_socio));
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ Error: ' + (data.message || 'No se pudo registrar la salida.'));
+                }
+            } catch (error) {
+                alert('❌ Error crítico de conexión con el servidor.');
+            }
+        } 
+    };
+
+    // Nueva función centralizada para aplicar el tiempo (manual o botones rápidos)
+    const aplicarTiempo = (minutosExtra) => {
+        const id_socio = modalTiempo.id_socio;
+        if (!minutosExtra || isNaN(minutosExtra) || minutosExtra <= 0) return;
+
+        if(window.confirm(`¿Añadir ${minutosExtra} minutos extra al tiempo del socio #${id_socio}?`)) {
+            setNinosLudoteca(ninosLudoteca.map(nino => {
+                if (nino.id_socio === id_socio) {
+                    const fechaOriginal = new Date(nino.tiempo_entrada);
+                    const nuevaFecha = new Date(fechaOriginal.getTime() + (minutosExtra * 60000));
+                    return { ...nino, tiempo_entrada: nuevaFecha.toISOString() };
+                }
+                return nino;
+            }));
+            setModalTiempo({ visible: false, id_socio: null });
+            setMinutosManual('');
+        }
+    };
+
+    const restablecerTiempo = (id_socio) => {
+        if(window.confirm(`¿Estás seguro de reiniciar el cronómetro a 00:00:00 para el socio #${id_socio}?`)) {
+            setNinosLudoteca(ninosLudoteca.map(nino => 
+                nino.id_socio === id_socio ? { ...nino, tiempo_entrada: new Date().toISOString() } : nino
+            ));
+        }
+    };
+
+    const [buscandoNino, setBuscandoNino] = useState(false); const [nombreNino, setNombreNino] = useState('');
+    const [buscandoTutor, setBuscandoTutor] = useState(false); const [nombreTutor, setNombreTutor] = useState('');
+    const simularBusqueda = (id, tipo) => {
+        if (!id) { tipo === 'nino' ? setNombreNino('') : setNombreTutor(''); return; }
+        tipo === 'nino' ? setBuscandoNino(true) : setBuscandoTutor(true);
+        setTimeout(() => {
+            let nombreEncontrado = `Socio #${id}`;
+            if (id === '19') nombreEncontrado = 'Kali Rosario Berrospe';
+            if (id === '18') nombreEncontrado = 'Kevin Manuel Rosario Berrospe';
+            if (tipo === 'nino') { setNombreNino(nombreEncontrado); setBuscandoNino(false); } 
+            else { setNombreTutor(nombreEncontrado); setBuscandoTutor(false); }
+        }, 800);
+    };
+
+    // ==========================================
+    // 3. ESTADOS: MEMBRESÍAS 
+    // ==========================================
+    const [idVerificar, setIdVerificar] = useState('');
+    const [resultadoMembresia, setResultadoMembresia] = useState(null);
+    const [verificando, setVerificando] = useState(false);
+
+    const verificarAcceso = async (e) => {
+        e.preventDefault();
+        if (!idVerificar) return;
+        setVerificando(true);
+        setResultadoMembresia(null);
+
+        try {
+            const res = await fetch(`http://localhost:8000/api/socios/${idVerificar}/verificar-acceso`);
+            const data = await res.json();
+            setResultadoMembresia(data);
+        } catch (error) {
+            setResultadoMembresia({ status: 'error', message: 'Error al conectar con el servidor.' });
+        }
+        setVerificando(false);
+    };
+
+    // ==========================================
+    // RENDERIZADO PRINCIPAL
+    // ==========================================
     return (
         <div className="space-y-6 text-gray-200">
-            {/* ENCABEZADO Y NAVEGACIÓN */}
+            {/* ENCABEZADO Y BUSCADOR */}
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h1 className="text-4xl font-extrabold text-white flex items-center gap-3">🛎️ Control de Recepción</h1>
@@ -64,27 +170,23 @@ const Recepcion = () => {
                 </div>
             </div>
 
-            {/* NAVEGACIÓN */}
-                <div><h1 className="text-4xl font-extrabold text-white flex items-center gap-3">🛎️ Control de Recepción</h1><p className="text-gray-400 mt-2">Gestión de accesos, ludoteca y reservaciones</p></div>
-                <div className="flex items-center bg-[#1a1d23] border border-gray-800 rounded-xl px-4 py-3 w-96 focus-within:border-yellow-400 transition-colors shadow-lg"><Search className="text-gray-500 mr-3" size={20} /><input type="text" placeholder="Escanear o teclear ID..." className="bg-transparent border-none outline-none text-white w-full"/></div>
-            </div>
+            {/* BOTONES DE NAVEGACIÓN */}
             <div className="flex space-x-2 bg-[#14171c] p-1 rounded-xl border border-gray-800 w-max shadow-lg">
                 <button onClick={() => setTabActiva('reservas')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${tabActiva === 'reservas' ? 'bg-yellow-400 text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}><CalendarDays size={18} /> Reservaciones</button>
                 <button onClick={() => setTabActiva('ludoteca')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${tabActiva === 'ludoteca' ? 'bg-yellow-400 text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}><Baby size={18} /> Ludoteca Live</button>
                 <button onClick={() => setTabActiva('membresias')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${tabActiva === 'membresias' ? 'bg-yellow-400 text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}><CreditCard size={18} /> Estatus Socios</button>
             </div>
 
-            {/* ZONA DINÁMICA */}
+            {/* ZONA DINÁMICA (CONTENIDO DE PESTAÑAS) */}
             <div className="bg-[#14171c] border border-gray-800 rounded-2xl p-8 min-h-[500px] shadow-xl relative">
                 
-                {/* --- PESTAÑA RESERVAS --- */}
+                {/* --- PESTAÑA 1: RESERVAS --- */}
                 {tabActiva === 'reservas' && (
                     <div className="animate-in fade-in duration-300">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-white">Reservaciones de Hoy</h2>
                             <button className="bg-[#1a1d23] border border-gray-800 hover:border-yellow-400 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2"><CalendarDays size={18} /> Filtrar Fechas</button>
                         </div>
-
                         <div className="overflow-x-auto rounded-xl border border-gray-800 shadow-lg">
                             <table className="w-full text-left text-sm text-gray-400">
                                 <thead className="bg-[#1a1d23] text-xs uppercase text-gray-500 font-bold">
@@ -94,7 +196,7 @@ const Recepcion = () => {
                                         <th className="px-6 py-4">Instalación</th>
                                         <th className="px-6 py-4">Horario</th>
                                         <th className="px-6 py-4">Estatus</th>
- q                                        <th className="px-6 py-4 text-center">Acciones</th>
+                                        <th className="px-6 py-4 text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800 bg-[#0f1115]">
@@ -129,11 +231,118 @@ const Recepcion = () => {
                     </div>
                 )}
 
-                {/* --- DEMÁS PESTAÑAS (Ludoteca y Membresías) --- */}
-                {/* ... (Se mantiene igual, resumido para no estorbar aquí) ... */}
+                {/* --- PESTAÑA 2: LUDOTECA --- */}
+                {tabActiva === 'ludoteca' && (
+                    <div className="animate-in fade-in duration-300">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">Niños en Ludoteca <span className="bg-yellow-400 text-black text-sm px-2 py-1 rounded-lg font-extrabold">{ninosLudoteca.length}</span></h2>
+                            <button onClick={() => setModalLudoteca(true)} className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-yellow-400/20">+ Registrar Ingreso</button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {ninosLudoteca.length === 0 ? (
+                                <p className="text-gray-500 col-span-3 text-center py-10">No hay niños registrados en este momento.</p>
+                            ) : (
+                                ninosLudoteca.map((nino) => {
+                                    const { formato, colorClass, lineaLateral } = calcularTiempoYColor(nino.tiempo_entrada);
+                                    return (
+                                        <div key={nino.id_socio} className="bg-[#1a1d23] border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-gray-600 transition-colors flex flex-col justify-between">
+                                            <div className={`absolute top-0 left-0 w-1 h-full ${lineaLateral}`}></div>
+                                            
+                                            {/* Cabecera de la tarjeta */}
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-white">#{nino.id_socio} - {nino.nombre_nino}</h3>
+                                                    <p className="text-xs text-gray-400">Tutor: {nino.tutor}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Reloj y Estado */}
+                                            <div className="flex justify-between items-center my-3">
+                                                <div className={`flex items-center gap-2 font-mono font-bold text-2xl w-max px-3 py-1 rounded-lg border ${colorClass}`}>
+                                                    <Clock size={20} /> {formato}
+                                                </div>
+                                                <div className="text-right flex flex-col items-end">
+                                                    <p className="text-[10px] text-gray-500 uppercase font-bold">Límite: 2 horas</p>
+                                                    {colorClass.includes("red") && <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded mt-1">¡TIEMPO EXCEDIDO!</span>}
+                                                    {colorClass.includes("yellow") && <span className="text-[10px] text-yellow-400 font-bold bg-yellow-500/10 px-2 py-1 rounded mt-1">FALTAN &lt; 15 MIN</span>}
+                                                </div>
+                                            </div>
+
+                                            {/* PANEL DE CONTROL ADMINISTRADOR */}
+                                            <div className="mt-2 pt-4 border-t border-gray-800 flex justify-between items-center opacity-90 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-2">
+                                                    {/* Nuevo botón que abre el modal de Tiempo */}
+                                                    <button onClick={() => setModalTiempo({ visible: true, id_socio: nino.id_socio })} className="text-[11px] font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-2 py-1.5 rounded border border-blue-500/20 transition-all" title="Modificar tiempo">⏱️ Añadir</button>
+                                                    <button onClick={() => restablecerTiempo(nino.id_socio)} className="text-[11px] font-bold bg-gray-700/50 text-gray-300 hover:bg-gray-700 px-2 py-1.5 rounded border border-gray-600 transition-all" title="Reiniciar a 0">🔄 Reset</button>
+                                                </div>
+                                                <button onClick={() => darSalida(nino.id_socio)} className="text-[11px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded border border-red-500/20 transition-all uppercase tracking-wider">
+                                                    Dar Salida
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* --- PESTAÑA 3: MEMBRESÍAS --- */}
+                {tabActiva === 'membresias' && (
+                    <div className="animate-in fade-in duration-300">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2"><CreditCard className="text-yellow-400"/> Verificación de Accesos</h2>
+                        </div>
+                        <div className="bg-[#1a1d23] border border-gray-800 p-8 rounded-2xl max-w-2xl mx-auto shadow-lg">
+                            <form onSubmit={verificarAcceso} className="flex gap-4 mb-8">
+                                <input type="number" placeholder="Ingrese ID del Socio..." required value={idVerificar} onChange={(e) => setIdVerificar(e.target.value)} className="flex-1 bg-[#0f1115] border border-gray-700 rounded-xl p-4 text-white focus:border-yellow-400 outline-none text-lg" />
+                                <button type="submit" disabled={verificando} className="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50">
+                                    {verificando ? <Loader2 className="animate-spin" size={24} /> : <Search size={24} />} Verificar
+                                </button>
+                            </form>
+                            {resultadoMembresia ? (
+                                <div className={`p-6 rounded-xl border-2 flex items-start gap-4 transition-all ${
+                                    resultadoMembresia.status === 'success' ? 'bg-green-500/10 border-green-500/30' :
+                                    resultadoMembresia.status === 'warning' ? 'bg-red-500/10 border-red-500/30' : 'bg-gray-800/50 border-gray-700'
+                                }`}>
+                                    {resultadoMembresia.status === 'success' ? <CheckCircle className="text-green-400 mt-1" size={36} /> : <AlertTriangle className={resultadoMembresia.status === 'warning' ? "text-red-400 mt-1" : "text-gray-400 mt-1"} size={36} />}
+                                    <div className="w-full">
+                                        <h3 className={`text-2xl font-bold mb-2 border-b pb-2 ${
+                                            resultadoMembresia.status === 'success' ? 'text-green-400 border-green-500/20' :
+                                            resultadoMembresia.status === 'warning' ? 'text-red-400 border-red-500/20' : 'text-gray-300 border-gray-700'
+                                        }`}>
+                                            {resultadoMembresia.message}
+                                        </h3>
+                                        {resultadoMembresia.socio && (
+                                            <div className="space-y-3 mt-4 text-gray-300 text-lg">
+                                                <p className="flex justify-between"><span className="text-gray-500 font-bold uppercase text-sm">Socio Titular:</span> <span className="font-medium text-white">{resultadoMembresia.socio}</span></p>
+                                                <p className="flex justify-between"><span className="text-gray-500 font-bold uppercase text-sm">Membresía:</span> <span className="text-yellow-400 font-medium">{resultadoMembresia.tipo_membresia}</span></p>
+                                                <p className="flex justify-between items-center">
+                                                    <span className="text-gray-500 font-bold uppercase text-sm">Estatus Financiero:</span>
+                                                    <span className={`px-4 py-1 rounded-lg text-sm font-extrabold ${
+                                                        resultadoMembresia.estatus === 'Vigente' ? 'bg-green-500 text-black' : 'bg-red-500 text-white animate-pulse'
+                                                    }`}>{resultadoMembresia.estatus}</span>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-10 border-2 border-dashed border-gray-800 rounded-xl">
+                                    <CreditCard className="mx-auto mb-4 text-gray-600" size={48} />
+                                    <p className="text-gray-500">Ingrese un ID de socio para verificar su estatus.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* MODAL DE EDITAR RESERVA MEJORADO */}
+            {/* ========================================== */}
+            {/* MODALES FLOTANTES */}
+            {/* ========================================== */}
+
+            {/* MODAL 1: EDITAR RESERVA */}
             {modalEditar && reservaEditando && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
                     <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6">
@@ -205,52 +414,13 @@ const Recepcion = () => {
                             </button>
                         </form>
                     </div>
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">Niños en Ludoteca <span className="bg-yellow-400 text-black text-sm px-2 py-1 rounded-lg font-extrabold">{ninosLudoteca.length}</span></h2>
-                            <button onClick={() => setModalLudoteca(true)} className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-yellow-400/20">+ Registrar Ingreso</button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {ninosLudoteca.length === 0 ? (
-                                <p className="text-gray-500 col-span-3 text-center py-10">No hay niños registrados en este momento.</p>
-                            ) : (
-                                ninosLudoteca.map((nino) => {
-                                    const { formato, colorClass, lineaLateral } = calcularTiempoYColor(nino.tiempo_entrada);
-                                    return (
-                                        <div key={nino.id_socio} className="bg-[#1a1d23] border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-gray-600 transition-colors">
-                                            <div className={`absolute top-0 left-0 w-1 h-full ${lineaLateral}`}></div>
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="font-bold text-lg text-white">#{nino.id_socio} - {nino.nombre_nino}</h3>
-                                                    <p className="text-xs text-gray-400 mb-4">Tutor: {nino.tutor}</p>
-                                                </div>
-                                                <button onClick={() => darSalida(nino.id_socio)} className="text-gray-600 hover:text-red-400 transition-colors" title="Dar salida (Check-out)"><X size={20} /></button>
-                                            </div>
-                                            <div className={`flex items-center gap-2 font-mono font-bold text-2xl w-max px-3 py-1 rounded-lg border ${colorClass}`}><Clock size={20} /> {formato}</div>
-                                            <div className="flex justify-between items-center mt-3">
-                                                <p className="text-[10px] text-gray-500 uppercase font-bold">Límite: 2 horas</p>
-                                                {colorClass.includes("red") && <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded">¡TIEMPO EXCEDIDO!</span>}
-                                                {colorClass.includes("yellow") && <span className="text-[10px] text-yellow-400 font-bold bg-yellow-500/10 px-2 py-1 rounded">FALTAN &lt; 15 MIN</span>}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </div>
-                )}
+                </div>
+            )}
 
-                {tabActiva === 'membresias' && (
-                    <div className="animate-in fade-in duration-300">
-                        <div className="flex justify-between items-center mb-6"><h2 className="text-2xl font-bold text-white">Verificación de Accesos</h2></div>
-                        <div className="border-2 border-dashed border-gray-800 p-10 rounded-2xl text-center text-gray-500"><AlertTriangle className="mx-auto mb-4 opacity-50" size={48} /><p>Aquí mostraremos las alertas si el socio escaneado debe pagos o su membresía venció (CM3-42).</p></div>
-                    </div>
-                )}
-            </div>
-
-            {/* MODAL DE REGISTRAR INGRESO CON BUSCADOR EN VIVO */}
+            {/* MODAL 2: REGISTRAR INGRESO LUDOTECA */}
             {modalLudoteca && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                   <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6">
+                    <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Baby className="text-yellow-400"/> Registrar Ingreso</h2>
                             <button onClick={() => {setModalLudoteca(false); setNombreNino(''); setNombreTutor('');}} className="text-gray-400 hover:text-white transition-colors"><X size={24}/></button>
@@ -267,7 +437,6 @@ const Recepcion = () => {
                                 const datos = { id_nino: formData.get('id_nino'), id_tutor: formData.get('id_tutor') };
                                 
                                 try {
-                                    // AQUÍ ESTÁ EL CAMBIO A LOCALHOST
                                     const res = await fetch('http://localhost:8000/api/ludoteca/ingreso', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -275,12 +444,10 @@ const Recepcion = () => {
                                     });
                                     const data = await res.json();
                                     
-                                    // Validamos que Laravel no nos mande error 404 disfrazado ni un error normal
                                     if (res.status !== 200 || data.status === 'error' || data.message?.includes('could not be found')) { 
-                                        alert("❌ Error: " + (data.message || "Ruta no encontrada (Asegúrate de agregar la ruta en api.php)")); 
+                                        alert("❌ Error: " + (data.message || "Ruta no encontrada")); 
                                     } else { 
                                         alert("✅ " + data.message); 
-                                        // AGREGAMOS AL NIÑO A LA PANTALLA CON SU NOMBRE
                                         const nuevoNino = {
                                             id_socio: datos.id_nino,
                                             nombre_nino: nombreNino || 'Niño Nuevo',
@@ -288,16 +455,11 @@ const Recepcion = () => {
                                             tiempo_entrada: new Date().toISOString()
                                         };
                                         setNinosLudoteca([...ninosLudoteca, nuevoNino]);
-                                        setModalLudoteca(false);
-                                        setNombreNino('');
-                                        setNombreTutor('');
+                                        setModalLudoteca(false); setNombreNino(''); setNombreTutor('');
                                     }
-                                } catch (error) { 
-                                    alert("❌ Error crítico: ¿Está prendido el servidor de Laravel?"); 
-                                }
+                                } catch (error) { alert("❌ Error crítico: ¿Está prendido el servidor de Laravel?"); }
                             }} className="space-y-5">
                             
-                            {/* CAMPO ID NIÑO */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">ID Niño (Socio Dependiente)</label>
                                 <input 
@@ -305,17 +467,12 @@ const Recepcion = () => {
                                     onChange={(e) => simularBusqueda(e.target.value, 'nino')}
                                     className="w-full bg-[#0f1115] border border-gray-700 rounded-lg p-3 text-white focus:border-yellow-400 outline-none" 
                                 />
-                                {/* Tarjeta dinámica que muestra el nombre encontrado */}
                                 <div className="mt-2 h-8">
-                                    {buscandoNino ? (
-                                        <p className="text-sm text-yellow-500 flex items-center gap-2"><Loader2 size={14} className="animate-spin"/> Buscando en BD...</p>
-                                    ) : nombreNino ? (
-                                        <p className="text-sm text-green-400 font-bold flex items-center gap-2 bg-green-500/10 w-max px-2 py-1 rounded"><UserCheck size={14}/> {nombreNino}</p>
-                                    ) : null}
+                                    {buscandoNino ? <p className="text-sm text-yellow-500 flex items-center gap-2"><Loader2 size={14} className="animate-spin"/> Buscando en BD...</p> 
+                                    : nombreNino ? <p className="text-sm text-green-400 font-bold flex items-center gap-2 bg-green-500/10 w-max px-2 py-1 rounded"><UserCheck size={14}/> {nombreNino}</p> : null}
                                 </div>
                             </div>
 
-                            {/* CAMPO ID TUTOR */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">ID Tutor Responsable</label>
                                 <input 
@@ -324,11 +481,8 @@ const Recepcion = () => {
                                     className="w-full bg-[#0f1115] border border-gray-700 rounded-lg p-3 text-white focus:border-yellow-400 outline-none" 
                                 />
                                 <div className="mt-2 h-8">
-                                    {buscandoTutor ? (
-                                        <p className="text-sm text-yellow-500 flex items-center gap-2"><Loader2 size={14} className="animate-spin"/> Buscando en BD...</p>
-                                    ) : nombreTutor ? (
-                                        <p className="text-sm text-green-400 font-bold flex items-center gap-2 bg-green-500/10 w-max px-2 py-1 rounded"><UserCheck size={14}/> {nombreTutor}</p>
-                                    ) : null}
+                                    {buscandoTutor ? <p className="text-sm text-yellow-500 flex items-center gap-2"><Loader2 size={14} className="animate-spin"/> Buscando en BD...</p> 
+                                    : nombreTutor ? <p className="text-sm text-green-400 font-bold flex items-center gap-2 bg-green-500/10 w-max px-2 py-1 rounded"><UserCheck size={14}/> {nombreTutor}</p> : null}
                                 </div>
                             </div>
 
@@ -337,6 +491,45 @@ const Recepcion = () => {
                     </div>
                 </div>
             )}
+
+            {/* MODAL 3: AÑADIR TIEMPO PERSONALIZADO */}
+            {modalTiempo.visible && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-[#1c1f26] border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2"><Clock className="text-blue-400"/> Añadir Tiempo</h2>
+                            <button onClick={() => { setModalTiempo({ visible: false, id_socio: null }); setMinutosManual(''); }} className="text-gray-400 hover:text-white transition-colors"><X size={24}/></button>
+                        </div>
+                        
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Minutos Personalizados</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="number" 
+                                        value={minutosManual}
+                                        onChange={(e) => setMinutosManual(e.target.value)}
+                                        placeholder="Ej. 20"
+                                        className="flex-1 bg-[#0f1115] border border-gray-700 rounded-lg p-3 text-white focus:border-blue-400 outline-none"
+                                    />
+                                    <button onClick={() => aplicarTiempo(parseInt(minutosManual))} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 rounded-lg transition-colors">Aplicar</button>
+                                </div>
+                            </div>
+                            
+                            <div className="pt-5 border-t border-gray-800">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Botones Rápidos</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    <button onClick={() => aplicarTiempo(15)} className="bg-[#0f1115] hover:bg-blue-500/20 hover:text-blue-400 border border-gray-700 hover:border-blue-500/50 text-gray-300 font-bold py-3 rounded-lg transition-all">+15m</button>
+                                    <button onClick={() => aplicarTiempo(30)} className="bg-[#0f1115] hover:bg-blue-500/20 hover:text-blue-400 border border-gray-700 hover:border-blue-500/50 text-gray-300 font-bold py-3 rounded-lg transition-all">+30m</button>
+                                    <button onClick={() => aplicarTiempo(45)} className="bg-[#0f1115] hover:bg-blue-500/20 hover:text-blue-400 border border-gray-700 hover:border-blue-500/50 text-gray-300 font-bold py-3 rounded-lg transition-all">+45m</button>
+                                    <button onClick={() => aplicarTiempo(60)} className="bg-[#0f1115] hover:bg-blue-500/20 hover:text-blue-400 border border-gray-700 hover:border-blue-500/50 text-gray-300 font-bold py-3 rounded-lg transition-all">+1h</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
