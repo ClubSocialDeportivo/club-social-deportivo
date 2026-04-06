@@ -343,4 +343,34 @@ class SocioController extends Controller
             'data' => $titulares,
         ], 200);
     }
+
+    public function verificarAcceso(string $id): JsonResponse
+    {
+        $socio = Socio::find($id);
+
+        if (!$socio) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'El socio con ID #' . $id . ' no existe en el sistema.'
+            ], 404);
+        }
+
+        if ($socio->estatus_financiero === 'Vigente') {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Acceso Permitido',
+                'socio' => $socio->nombre . ' ' . $socio->apellidos,
+                'estatus' => $socio->estatus_financiero,
+                'tipo_membresia' => $socio->tipo_membresia
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Acceso Restringido: ' . $socio->estatus_financiero,
+                'socio' => $socio->nombre . ' ' . $socio->apellidos,
+                'estatus' => $socio->estatus_financiero,
+                'tipo_membresia' => $socio->tipo_membresia
+            ], 200);
+        }
+    }
 }
