@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -61,6 +62,7 @@ const Socios = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createFormData, setCreateFormData] = useState(initialCreateForm);
   const [savingCreate, setSavingCreate] = useState(false);
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMembresia, setFilterMembresia] = useState("");
@@ -568,7 +570,7 @@ const Socios = () => {
             </select>
           </div>
 
-          <button
+      <button
             onClick={cargarTodo}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-700 bg-[#1b2130] text-gray-300 transition hover:border-gray-600 hover:text-white"
             title="Recargar socios"
@@ -577,11 +579,11 @@ const Socios = () => {
           </button>
         </div>
 
-        {loading ? (
+      {loading ? (
           <div className="px-6 py-16 text-center text-gray-400">
             Cargando socios...
           </div>
-        ) : socios.length === 0 ? (
+      ) : socios.length === 0 ? (
           <div className="px-6 py-16 text-center text-gray-500">
             No hay socios registrados.
           </div>
@@ -895,6 +897,9 @@ const Socios = () => {
             </form>
           </div>
         </div>
+      )}
+      {showCheckInModal && (
+        <CheckInModal open={true} onClose={() => setShowCheckInModal(false)} />
       )}
 
       {showEditModal && (

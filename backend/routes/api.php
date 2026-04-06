@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LudotecaController;
+use App\Http\Controllers\Api\CheckinsController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
@@ -118,3 +119,43 @@ Route::get('/asistencias/sesion/{id_sesion}', [AsistenciasController::class, 'po
 Route::get('/asistencias',        [AsistenciasController::class, 'index']);
 Route::post('/asistencias',       [AsistenciasController::class, 'store']);
 Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
+Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE CHECK-IN
+|--------------------------------------------------------------------------
+*/
+ 
+use App\Http\Controllers\Api\CheckinController;
+ 
+// Buscar socio (debe ir ANTES de las rutas con parámetros)
+Route::get('/checkins/buscar', [CheckinController::class, 'buscarSocio']);
+ 
+Route::get('/checkins',  [CheckinController::class, 'index']);
+Route::post('/checkins', [CheckinController::class, 'store']);
+
+
+
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE PAGOS
+|--------------------------------------------------------------------------
+*/
+
+use App\Http\Controllers\Api\PagosController;
+
+// Catálogo (debe ir ANTES de /{id})
+Route::get('/pagos/metodos', [PagosController::class, 'getMetodos']);
+
+Route::get('/pagos',        [PagosController::class, 'index']);
+Route::get('/pagos/{id}',   [PagosController::class, 'show']);
+Route::post('/pagos',       [PagosController::class, 'store']);
