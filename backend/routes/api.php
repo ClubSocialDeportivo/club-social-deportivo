@@ -166,3 +166,25 @@ Route::post('/checkins', [CheckinController::class, 'store']);
 
 
 
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| MÓDULO DE PAGOS
+|--------------------------------------------------------------------------
+*/
+
+use App\Http\Controllers\Api\PagosController;
+
+// Catálogo (debe ir ANTES de /{id})
+Route::get('/pagos/metodos', [PagosController::class, 'getMetodos']);
+
+Route::get('/pagos',        [PagosController::class, 'index']);
+Route::get('/pagos/{id}',   [PagosController::class, 'show']);
+Route::post('/pagos',       [PagosController::class, 'store']);

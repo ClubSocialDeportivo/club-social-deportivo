@@ -10,6 +10,7 @@ import Instructores from "./pages/Instructores";
 import Actividades from "./pages/Actividades";
 import Sesiones from "./pages/Sesiones";
 
+import Pagos from "./pages/Pagos";
 
 import Torneos from "./pages/Torneos"; // <-- Aquí importamos tu pantalla
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/Actividades" element={<Actividades />} ></Route>
           <Route path="/sesiones" element={<Sesiones />} />
+          <Route path="/pagos" element={<Pagos />} />
 
         </Route>
       </Routes>
