@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Trophy,
   BellRing,
+  BellPlus
   Banknote,
 } from "lucide-react";
 
@@ -58,6 +59,12 @@ export const MenuItems = [
     icon: Trophy,
     path: "/torneos",
   },
+  {
+    title: "Check-in",       
+    icon: BellPlus,          
+    path: "/check-in",       
+  },
+];
   { title: "Pagos",
     icon: Banknote, 
     path: "/pagos" },
