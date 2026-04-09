@@ -12,13 +12,15 @@ import Sesiones from "./pages/Sesiones";
 import Pagos from "./pages/Pagos";
 import Torneos from "./pages/Torneos";
 import CalendarioInstructor from "./pages/CalendarioInstructor";
+import RedirectByRole from "./components/RedirectByRole";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<RedirectByRole />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/instalaciones" element={<Instalaciones />} />
           <Route path="/recepcion" element={<Recepcion />} />
           <Route path="/socios" element={<Socios />} />

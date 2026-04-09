@@ -16,7 +16,7 @@ export const MenuItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    path: "/",
+    path: "/dashboard",
     roles: ["admin", "instructor"],
   },
   {

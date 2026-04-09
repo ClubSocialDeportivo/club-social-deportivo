@@ -1,10 +1,11 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Repeat } from "lucide-react";
 import { headerActions } from "../config/header_actions";
 import { useRoleSimulator } from "../context/RoleSimulatorContext";
 
 const TopHeader = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { fakeRole, toggleRole, isAdmin } = useRoleSimulator();
 
   // Botones especiales según la ruta actual
@@ -13,12 +14,16 @@ const TopHeader = () => {
   // Título dinámico básico
   const pageTitle = location.pathname.replace("/", "") || "Dashboard";
 
+  const handleRoleChange = () => {
+    const nextRoute = isAdmin ? "/calendario-instructor" : "/dashboard";
+    toggleRole();
+    navigate(nextRoute);
+  };
+
   return (
     <header className="h-20 bg-[#14171c] border-b border-gray-800 flex items-center justify-between px-8">
       {/* Lado izquierdo: Título dinámico */}
-      <h1 className="text-xl font-bold capitalize">
-        {pageTitle}
-      </h1>
+      <h1 className="text-xl font-bold capitalize">{pageTitle}</h1>
 
       {/* Lado derecho: Botones Especiales + Simulador + Perfil */}
       <div className="flex items-center space-x-4">
@@ -36,7 +41,7 @@ const TopHeader = () => {
 
         {/* Botón para cambiar vista */}
         <button
-          onClick={toggleRole}
+          onClick={handleRoleChange}
           className="flex items-center px-4 py-2 rounded-lg text-sm font-bold bg-gray-800 text-white border border-gray-700 transition-all hover:scale-105"
           title="Cambiar vista temporal"
         >
