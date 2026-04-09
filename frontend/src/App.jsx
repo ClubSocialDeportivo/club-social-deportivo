@@ -28,7 +28,7 @@ function App() {
           <Route path="/torneos" element={<Torneos />} /> {/* <-- Aquí agregamos la ruta */}
           <Route path="/check-in" element={<CheckIn />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/Actividades" element={<Actividades />} ></Route>
+          <Route path="/actividades" element={<Actividades />} />
           <Route path="/sesiones" element={<Sesiones />} />
           <Route path="/pagos" element={<Pagos />} />
 
