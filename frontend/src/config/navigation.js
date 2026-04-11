@@ -53,14 +53,20 @@ export const MenuItems = [
   {
     title: "Agenda y Reservaciones",
     icon: NotebookPen,
-    path: "/actividades", // 🔥 corregido a minúsculas
-    roles: ["admin", "instructor"],
+    path: "/actividades",
+    roles: ["admin"],
   },
   {
     title: "Sesiones",
     icon: CalendarDays,
     path: "/sesiones",
-    roles: ["admin", "instructor"],
+    roles: ["admin"],
+  },
+  {
+    title: "Mi Calendario",
+    icon: CalendarDays,
+    path: "/calendario-instructor",
+    roles: ["instructor"],
   },
   {
     title: "Torneos",
