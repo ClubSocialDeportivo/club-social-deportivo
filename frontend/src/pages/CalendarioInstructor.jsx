@@ -6,8 +6,12 @@ import {
   Activity,
   MapPin,
   User,
+  Hash,
+  BadgeInfo,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import AgendaDetailsModal from "../components/Agendadeatilsmodal";
+import { useRoleSimulator } from "../context/RoleSimulatorContext";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const toYMD = (date) => date.toISOString().split("T")[0];
@@ -24,7 +28,7 @@ const formatDateLabel = (date) =>
 
 const getWeekRange = (baseDate) => {
   const date = new Date(baseDate);
-  const day = date.getDay(); // 0 domingo
+  const day = date.getDay();
   const diffToMonday = day === 0 ? -6 : 1 - day;
 
   const monday = new Date(date);
@@ -46,25 +50,27 @@ const isDateWithinRange = (dateStr, start, end) => {
 // ── Componente principal ─────────────────────────────────────────────────────
 const CalendarioInstructor = () => {
   const today = new Date();
+  const { fakeInstructorId } = useRoleSimulator();
 
-  // Estado visual del calendario
   const [currentMonth, setCurrentMonth] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
   const [selectedDate, setSelectedDate] = useState(today);
 
-  // Datos
   const [sesiones, setSesiones] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ── Fetch temporal ─────────────────────────────────────────────────────────
-  // En esta subtarea solo construimos la interfaz.
-  // Más adelante filtraremos por instructor en otra subtarea.
+  const [selectedSesion, setSelectedSesion] = useState(null);
+  const [isAgendaDetailOpen, setIsAgendaDetailOpen] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   useEffect(() => {
     const cargarSesiones = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:8000/api/agenda");
+        const res = await fetch(
+          `http://localhost:8000/api/agenda?id_instructor=${fakeInstructorId}`
+        );
         const result = await res.json();
 
         if (result.status === "success") {
@@ -78,9 +84,8 @@ const CalendarioInstructor = () => {
     };
 
     cargarSesiones();
-  }, []);
+  }, [fakeInstructorId]);
 
-  // ── Días del calendario ────────────────────────────────────────────────────
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -100,7 +105,6 @@ const CalendarioInstructor = () => {
     return days;
   }, [currentMonth]);
 
-  // ── Eventos por día ────────────────────────────────────────────────────────
   const eventsByDay = useMemo(() => {
     const map = {};
 
@@ -114,7 +118,6 @@ const CalendarioInstructor = () => {
     return map;
   }, [sesiones]);
 
-  // ── Sesiones del día seleccionado ─────────────────────────────────────────
   const selectedYMD = toYMD(selectedDate);
 
   const sesionesDelDia = useMemo(() => {
@@ -123,11 +126,12 @@ const CalendarioInstructor = () => {
       .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
   }, [sesiones, selectedYMD]);
 
-  // ── Stats para la vista instructor ────────────────────────────────────────
   const { monday, sunday } = getWeekRange(today);
 
   const stats = useMemo(() => {
-    const clasesHoy = sesiones.filter((sesion) => isSameDay(sesion.fecha, today)).length;
+    const clasesHoy = sesiones.filter((sesion) =>
+      isSameDay(sesion.fecha, today)
+    ).length;
 
     const clasesSemana = sesiones.filter((sesion) =>
       isDateWithinRange(sesion.fecha, monday, sunday)
@@ -153,7 +157,6 @@ const CalendarioInstructor = () => {
     };
   }, [sesiones, today, monday, sunday, currentMonth]);
 
-  // ── Navegación de mes ──────────────────────────────────────────────────────
   const prevMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
@@ -171,9 +174,25 @@ const CalendarioInstructor = () => {
     year: "numeric",
   });
 
+  const handleViewSesion = async (id) => {
+    setLoadingDetail(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/agenda/${id}`);
+      const result = await res.json();
+
+      if (result.status === "success") {
+        setSelectedSesion(result.data);
+        setIsAgendaDetailOpen(true);
+      }
+    } catch (error) {
+      console.error("Error cargando detalle de sesión:", error);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Encabezado principal */}
       <div className="bg-[#14171c] rounded-xl border border-gray-800 p-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl md:text-3xl font-bold text-white">
@@ -183,10 +202,12 @@ const CalendarioInstructor = () => {
             Consulta tus clases asignadas, horarios e instalaciones desde una
             sola vista.
           </p>
+          <p className="text-xs text-blue-400">
+            Instructor simulado ID: {fakeInstructorId}
+          </p>
         </div>
       </div>
 
-      {/* Tarjetas de resumen */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Clases de hoy"
@@ -214,11 +235,8 @@ const CalendarioInstructor = () => {
         />
       </div>
 
-      {/* Layout principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendario */}
         <div className="lg:col-span-2 bg-[#14171c] rounded-xl border border-gray-800 overflow-hidden">
-          {/* Header calendario */}
           <div className="p-5 border-b border-gray-800 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold capitalize text-white">
@@ -258,7 +276,6 @@ const CalendarioInstructor = () => {
             </div>
           </div>
 
-          {/* Días de la semana */}
           <div className="grid grid-cols-7 border-b border-gray-800">
             {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
               <div
@@ -270,7 +287,6 @@ const CalendarioInstructor = () => {
             ))}
           </div>
 
-          {/* Cuadrícula */}
           <div className="grid grid-cols-7">
             {calendarDays.map((day, idx) => {
               if (!day) {
@@ -322,7 +338,6 @@ const CalendarioInstructor = () => {
             })}
           </div>
 
-          {/* Leyenda */}
           <div className="p-4 border-t border-gray-800 flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
             <span className="text-xs text-gray-400">
@@ -331,14 +346,14 @@ const CalendarioInstructor = () => {
           </div>
         </div>
 
-        {/* Panel del día */}
         <div className="space-y-4">
           <div className="bg-[#14171c] rounded-xl border border-gray-800 p-5">
             <h3 className="text-lg font-bold capitalize text-white">
               {formatDateLabel(selectedDate)}
             </h3>
             <p className="text-gray-500 text-sm mt-1">
-              {sesionesDelDia.length} clase{sesionesDelDia.length !== 1 ? "s" : ""} programada
+              {sesionesDelDia.length} clase
+              {sesionesDelDia.length !== 1 ? "s" : ""} programada
               {sesionesDelDia.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -351,7 +366,7 @@ const CalendarioInstructor = () => {
               </h4>
             </div>
 
-            <div className="divide-y divide-gray-800 max-h-[28rem] overflow-y-auto">
+            <div className="p-4 space-y-4 max-h-[32rem] overflow-y-auto">
               {loading ? (
                 <p className="text-center py-8 text-gray-500 text-sm">
                   Cargando clases...
@@ -362,13 +377,29 @@ const CalendarioInstructor = () => {
                 </p>
               ) : (
                 sesionesDelDia.map((sesion) => (
-                  <ClassBlock key={sesion.id_sesion} sesion={sesion} />
+                  <ClassBlock
+                    key={sesion.id_sesion}
+                    sesion={sesion}
+                    onClick={() => handleViewSesion(sesion.id_sesion)}
+                  />
                 ))
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <AgendaDetailsModal
+        isOpen={isAgendaDetailOpen}
+        onClose={() => setIsAgendaDetailOpen(false)}
+        data={selectedSesion}
+      />
+
+      {loadingDetail && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-xl border border-gray-800 bg-[#14171c] px-4 py-3 text-sm text-gray-300 shadow-lg">
+          Cargando detalle de la sesión...
+        </div>
+      )}
     </div>
   );
 };
@@ -386,7 +417,7 @@ const StatCard = ({ title, value, icon, color }) => (
   </div>
 );
 
-const ClassBlock = ({ sesion }) => {
+const ClassBlock = ({ sesion, onClick }) => {
   const className =
     sesion.disciplina?.nombre_disciplina || `Clase #${sesion.id_sesion}`;
 
@@ -396,49 +427,99 @@ const ClassBlock = ({ sesion }) => {
   const locationName =
     sesion.espacio?.nombre_especifico || `Espacio #${sesion.id_espacio}`;
 
+  const sessionTime = `${sesion.hora_inicio} - ${sesion.hora_fin}`;
+
   return (
-    <div className="px-5 py-4 hover:bg-gray-800/40 transition-colors">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-2xl border border-gray-800 bg-gradient-to-br from-[#171b22] to-[#11151b] p-4 shadow-sm transition-all duration-200 hover:border-blue-500/40 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+    >
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-white">{className}</p>
-
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <Clock size={13} />
-            <span>
-              {sesion.hora_inicio} - {sesion.hora_fin}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <MapPin size={13} />
-            <span>{locationName}</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <User size={13} />
-            <span>{instructorName}</span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+              <Activity size={16} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-base font-bold text-white truncate">
+                {className}
+              </p>
+              <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                Haz clic para ver más detalles
+              </p>
+            </div>
           </div>
         </div>
 
         <EstadoBadge status={sesion.estado} />
       </div>
-    </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-3">
+        <DetailChip
+          icon={<Clock size={14} />}
+          label="Horario"
+          value={sessionTime}
+          valueClassName="text-white font-semibold"
+        />
+        <DetailChip
+          icon={<MapPin size={14} />}
+          label="Instalación"
+          value={locationName}
+        />
+        <DetailChip
+          icon={<User size={14} />}
+          label="Instructor"
+          value={instructorName}
+        />
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-800/80 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-gray-500">
+          <Hash size={12} />
+          <span>ID de sesión: {sesion.id_sesion}</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-blue-400">
+          <BadgeInfo size={13} />
+          <span className="font-medium">Abrir detalle</span>
+        </div>
+      </div>
+    </button>
   );
 };
 
+const DetailChip = ({
+  icon,
+  label,
+  value,
+  valueClassName = "text-gray-200",
+}) => (
+  <div className="flex items-start gap-3 rounded-xl border border-gray-800 bg-[#0f1319]/70 px-3 py-3">
+    <div className="mt-0.5 text-gray-400">{icon}</div>
+    <div className="min-w-0">
+      <p className="text-[11px] uppercase tracking-wide text-gray-500">
+        {label}
+      </p>
+      <p className={`text-sm break-words ${valueClassName}`}>{value}</p>
+    </div>
+  </div>
+);
+
 const EstadoBadge = ({ status }) => {
   const styles = {
-    Programada: "bg-yellow-500/10 text-yellow-400",
-    Activa: "bg-green-500/10 text-green-400",
-    Cancelada: "bg-red-500/10 text-red-400",
-    Finalizada: "bg-gray-500/10 text-gray-400",
+    Programada: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
+    Activa: "bg-green-500/10 text-green-400 border border-green-500/20",
+    Cancelada: "bg-red-500/10 text-red-400 border border-red-500/20",
+    Finalizada: "bg-gray-500/10 text-gray-400 border border-gray-500/20",
   };
 
-  const style = styles[status] || "bg-gray-700 text-gray-300";
+  const style =
+    styles[status] || "bg-gray-700 text-gray-300 border border-gray-600";
 
   return (
     <span
-      className={`inline-block px-2 py-1 rounded-md text-[10px] font-bold ${style}`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${style}`}
     >
       {status || "Sin estado"}
     </span>
