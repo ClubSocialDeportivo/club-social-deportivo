@@ -10,11 +10,17 @@ class AgendaController extends Controller
 {
     /**
      * GET /api/agenda
-     * Lista todas las sesiones con sus relaciones
+     * Lista sesiones con filtro opcional por instructor
      */
-    public function index()
+    public function index(Request $request)
     {
-        $sesiones = Agenda::with(['disciplina', 'instructor', 'espacio'])->get();
+        $query = Agenda::with(['disciplina', 'instructor', 'espacio']);
+
+        if ($request->filled('id_instructor')) {
+            $query->where('id_instructor', $request->id_instructor);
+        }
+
+        $sesiones = $query->get();
 
         return response()->json([
             'status' => 'success',
@@ -55,8 +61,6 @@ class AgendaController extends Controller
         ]);
 
         $sesion = Agenda::create($validated);
-
-        // Recargamos con relaciones para devolver datos completos
         $sesion->load(['disciplina', 'instructor', 'espacio']);
 
         return response()->json([

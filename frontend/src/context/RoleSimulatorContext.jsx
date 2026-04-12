@@ -8,9 +8,18 @@ export const RoleSimulatorProvider = ({ children }) => {
     return savedRole || "admin";
   });
 
+  const [fakeInstructorId, setFakeInstructorId] = useState(() => {
+    const savedInstructorId = localStorage.getItem("cm360_fake_instructor_id");
+    return savedInstructorId ? Number(savedInstructorId) : 13;
+  });
+
   useEffect(() => {
     localStorage.setItem("cm360_fake_role", fakeRole);
   }, [fakeRole]);
+
+  useEffect(() => {
+    localStorage.setItem("cm360_fake_instructor_id", String(fakeInstructorId));
+  }, [fakeInstructorId]);
 
   const toggleRole = () => {
     setFakeRole((prevRole) =>
@@ -23,10 +32,12 @@ export const RoleSimulatorProvider = ({ children }) => {
       fakeRole,
       setFakeRole,
       toggleRole,
+      fakeInstructorId,
+      setFakeInstructorId,
       isAdmin: fakeRole === "admin",
       isInstructor: fakeRole === "instructor",
     }),
-    [fakeRole]
+    [fakeRole, fakeInstructorId]
   );
 
   return (
