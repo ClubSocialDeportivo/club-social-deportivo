@@ -103,6 +103,51 @@ const AgendaDetailsModal = ({ isOpen, onClose, data }) => {
             </div>
           </div>
 
+        {/* --- INICIO CAMBIO CM3-168: LISTA DE ASISTENTES --- */}
+        <div className="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2">
+              <Users size={14} /> Lista de Asistentes
+            </h3>
+            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-1 rounded-full border border-blue-500/20">
+              {data.asistencias?.length || 0} / {data.cupo_maximo || "∞"} LUGARES
+            </span>
+          </div>
+
+          <div className="max-h-[250px] overflow-y-auto pr-2 custom-scrollbar space-y-2">
+            {data.asistencias && data.asistencias.length > 0 ? (
+              data.asistencias.map((item, index) => (
+                <div key={index} className="flex justify-between items-center bg-[#1c1f26] p-3 rounded-lg border border-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                      {item.socio?.nombre?.charAt(0) || "S"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-200">
+                        {item.socio?.nombre} {item.socio?.apellido_paterno}
+                      </p>
+                      <p className="text-[10px] text-gray-500">Socio #{item.id_socio}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                    item.socio?.estatus_financiero === "Activo"
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                      : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                  }`}>
+                    {item.socio?.estatus_financiero || "S/E"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 border-2 border-dashed border-gray-800 rounded-xl">
+                <Users className="mx-auto text-gray-700 mb-2" size={24} />
+                <p className="text-gray-500 text-sm italic">Clase Vacía</p>
+                <p className="text-gray-600 text-[10px] uppercase mt-1">Nadie se ha inscrito aún</p>
+              </div>
+            )}
+          </div>
+        </div>
+
           {/* Metadatos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetaField label="Fecha de Registro"    value={formatDate(data.created_at)}/>
