@@ -42,4 +42,11 @@ class Agenda extends Model
     {
         return $this->hasMany(Asistencia::class, 'id_sesion', 'id_sesion');
     }
+
+    protected $appends = ['asistentes_count'];
+
+    public function getAsistentesCountAttribute()
+    {
+        return $this->asistencias()->count();
+    }
 }
