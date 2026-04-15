@@ -1,7 +1,19 @@
-import { X, Calendar, Clock, Users, MapPin, Activity, User, Hash, CheckCircle, XCircle } from "lucide-react";
+import React, { useState } from "react"; // <--- ESTO FALTA
+import { X, Calendar, Clock, Users, MapPin, Activity, User, Hash, CheckCircle, XCircle, QrCode } from "lucide-react";
+import { QRCodeCanvas } from 'qrcode.react';
 
 const AgendaDetailsModal = ({ isOpen, onClose, data }) => {
   if (!isOpen || !data) return null;
+
+  const [showQR, setShowQR] = useState(false);
+
+  if (!isOpen || !data) return null;
+
+  // Lógica para mostrar QR: Solo si la sesión es hoy y falta poco (o ya empezó)
+  const ahora = new Date();
+  const horaSesion = new Date(`${data.fecha} ${data.hora_inicio}`);
+  const diferenciaMinutos = (horaSesion - ahora) / (1000 * 60);
+  const permitirQR = diferenciaMinutos <= 30 && data.estado !== 'Finalizada';  
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -103,6 +115,44 @@ const AgendaDetailsModal = ({ isOpen, onClose, data }) => {
             </div>
           </div>
 
+          {/* --- SECCIÓN DINÁMICA DE CÓDIGO QR --- */}
+          {permitirQR ? (
+            <div className="p-5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-center">
+              {!showQR ? (
+                <button 
+                  onClick={() => setShowQR(true)}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  <QrCode size={22} /> GENERAR PASE DE ACCESO (QR)
+                </button>
+              ) : (
+                <div className="flex flex-col items-center bg-white p-6 rounded-2xl animate-in fade-in zoom-in duration-300">
+                  <p className="text-black font-bold mb-3 text-sm">Escanea en la entrada</p>
+                  <QRCodeCanvas 
+                    value={`SESION:${data.id_sesion}|SOCIO:21|TOKEN:${Math.random().toString(36).substring(7)}`} 
+                    size={200}
+                    level={"H"}
+                  />
+                  <button 
+                    onClick={() => setShowQR(false)} 
+                    className="text-red-500 text-xs mt-4 font-bold hover:underline"
+                  >
+                    OCULTAR CÓDIGO
+                  </button>
+                </div>
+              )}
+              <p className="text-[10px] text-emerald-400/60 mt-2 uppercase tracking-widest font-bold">
+                Disponible por inicio de sesión
+              </p>
+            </div>
+          ) : (
+            <div className="p-4 bg-gray-800/20 border border-gray-800 rounded-xl text-center">
+              <p className="text-gray-500 text-xs italic">
+                El código QR se activará 30 minutos antes del inicio de la clase.
+              </p>
+            </div>
+          )}
+
         {/* --- INICIO CAMBIO CM3-168: LISTA DE ASISTENTES --- */}
         <div className="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
           <div className="flex justify-between items-center mb-4">
@@ -110,7 +160,7 @@ const AgendaDetailsModal = ({ isOpen, onClose, data }) => {
               <Users size={14} /> Lista de Asistentes
             </h3>
             <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-1 rounded-full border border-blue-500/20">
-              {data.asistencias?.length || 0} / {data.cupo_maximo || "∞"} LUGARES
+              {data.asistencias?.length || 0} / {data.cupo_maximo || "∞"} LUGARES OCUPADOS
             </span>
           </div>
 
