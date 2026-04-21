@@ -64,4 +64,35 @@ class LudotecaController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Error de servidor: ' . $e->getMessage()], 500);
         }
     }
+
+    public function registrarSalida(Request $request)
+    {
+        $ninoId = $request->input('id_nino');
+
+        try {
+            // Buscamos si el niño está adentro
+            $activo = DB::table('tbl_ludoteca')
+                ->where('id_nino_fk', $ninoId)
+                ->where('estado', 'Activo')
+                ->first();
+
+            if (!$activo) {
+                return response()->json(['status' => 'error', 'message' => 'El niño no está en ludoteca o ya salió.'], 404);
+            }
+
+            // Cambiamos su estado a Finalizado para que pueda volver a entrar después
+            DB::table('tbl_ludoteca')
+                ->where('id_nino_fk', $ninoId)
+                ->where('estado', 'Activo')
+                ->update([
+                    'estado' => 'Finalizado',
+                    'updated_at' => now()
+                ]);
+
+            return response()->json(['status' => 'success', 'message' => 'Salida registrada correctamente en BD.']);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Error de servidor: ' . $e->getMessage()], 500);
+        }
+    }
 }
