@@ -4,30 +4,14 @@ import {
   Users,
   UserRound,
   RefreshCcw,
-  Pencil,
-  Trash2,
   Link2,
   Filter,
   X,
+  Eye,
 } from "lucide-react";
 
 const API_DEPENDIENTES = "http://localhost:8000/api/dependientes";
 const API_TITULARES = "http://localhost:8000/api/titulares";
-const API_SOCIOS = "http://localhost:8000/api/socios";
-
-const initialForm = {
-  nombre: "",
-  apellidos: "",
-  fecha_nacimiento: "",
-  genero: "",
-  numero_documento: "",
-  id_titular_fk: "",
-};
-
-const fieldBaseClass =
-  "w-full rounded-lg border border-gray-700 bg-[#0f131a] px-3 py-2 text-sm text-white outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400";
-
-const labelClass = "mb-1 block text-sm font-medium text-gray-300";
 
 const Dependientes = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,15 +21,8 @@ const Dependientes = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-
-  const [createFormData, setCreateFormData] = useState(initialForm);
-  const [editFormData, setEditFormData] = useState(initialForm);
-
-  const [editingId, setEditingId] = useState(null);
-  const [savingCreate, setSavingCreate] = useState(false);
-  const [savingEdit, setSavingEdit] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingDependiente, setViewingDependiente] = useState(null);
 
   const titularFiltro = searchParams.get("titular");
 
@@ -100,23 +77,17 @@ const Dependientes = () => {
   }, []);
 
   useEffect(() => {
-    const handleOpenCreateModal = () => openCreateModal();
+    const handleRefreshDependientes = () => cargarTodo();
 
-    window.addEventListener("open-add-dependiente-modal", handleOpenCreateModal);
+    window.addEventListener("refresh-dependientes", handleRefreshDependientes);
 
     return () => {
       window.removeEventListener(
-        "open-add-dependiente-modal",
-        handleOpenCreateModal
+        "refresh-dependientes",
+        handleRefreshDependientes
       );
     };
-  }, [titularFiltro, titulares]);
-
-  const titularesFamiliares = useMemo(() => {
-    return titulares.filter(
-      (titular) => (titular.modalidad || "").toLowerCase() === "familiar"
-    );
-  }, [titulares]);
+  }, []);
 
   const getNombreTitular = (idTitular) => {
     const titular = titulares.find((t) => t.id_socio === Number(idTitular));
@@ -126,202 +97,6 @@ const Dependientes = () => {
   const getTitularActual = () => {
     if (!titularFiltro) return null;
     return titulares.find((t) => t.id_socio === Number(titularFiltro)) || null;
-  };
-
-  const validarTitularFamiliar = (idTitular) => {
-    const titular = titulares.find((t) => t.id_socio === Number(idTitular));
-
-    if (!titular) {
-      throw new Error("Debes seleccionar un titular válido.");
-    }
-
-    if ((titular.modalidad || "").toLowerCase() !== "familiar") {
-      throw new Error(
-        `No se puede registrar un dependiente para "${titular.nombre} ${titular.apellidos}" porque su modalidad es Individual.`
-      );
-    }
-
-    return titular;
-  };
-
-  const openCreateModal = () => {
-    const titularPreseleccionado =
-      titularFiltro &&
-      titulares.some(
-        (t) =>
-          t.id_socio === Number(titularFiltro) &&
-          (t.modalidad || "").toLowerCase() === "familiar"
-      )
-        ? titularFiltro
-        : "";
-
-    setCreateFormData({
-      ...initialForm,
-      id_titular_fk: titularPreseleccionado,
-    });
-    setShowCreateModal(true);
-  };
-
-  const closeCreateModal = () => {
-    setShowCreateModal(false);
-    setCreateFormData(initialForm);
-  };
-
-  const openEditModal = (dependiente) => {
-    setEditingId(dependiente.id_socio);
-    setEditFormData({
-      nombre: dependiente.nombre || "",
-      apellidos: dependiente.apellidos || "",
-      fecha_nacimiento: dependiente.fecha_nacimiento
-        ? dependiente.fecha_nacimiento.slice(0, 10)
-        : "",
-      genero: dependiente.genero || "",
-      numero_documento: dependiente.numero_documento || "",
-      id_titular_fk: dependiente.id_titular_fk || "",
-    });
-    setShowEditModal(true);
-  };
-
-  const closeEditModal = () => {
-    setShowEditModal(false);
-    setEditingId(null);
-    setEditFormData(initialForm);
-  };
-
-  const handleCreateChange = (e) => {
-    const { name, value } = e.target;
-    setCreateFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleCreateDependiente = async (e) => {
-    e.preventDefault();
-
-    try {
-      setSavingCreate(true);
-      setError("");
-
-      validarTitularFamiliar(createFormData.id_titular_fk);
-
-      const payload = {
-        nombre: createFormData.nombre,
-        apellidos: createFormData.apellidos,
-        fecha_nacimiento: createFormData.fecha_nacimiento,
-        genero: createFormData.genero,
-        numero_documento: createFormData.numero_documento || null,
-        id_usuario: null,
-        es_titular: false,
-        id_titular_fk: Number(createFormData.id_titular_fk),
-      };
-
-      const res = await fetch(API_SOCIOS, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        console.error(result);
-        throw new Error(result.message || "No se pudo registrar el dependiente");
-      }
-
-      await cargarTodo();
-      closeCreateModal();
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error al registrar dependiente.");
-    } finally {
-      setSavingCreate(false);
-    }
-  };
-
-  const handleUpdateDependiente = async (e) => {
-    e.preventDefault();
-
-    try {
-      setSavingEdit(true);
-      setError("");
-
-      validarTitularFamiliar(editFormData.id_titular_fk);
-
-      const payload = {
-        nombre: editFormData.nombre,
-        apellidos: editFormData.apellidos,
-        fecha_nacimiento: editFormData.fecha_nacimiento,
-        genero: editFormData.genero,
-        numero_documento: editFormData.numero_documento || null,
-        es_titular: false,
-        id_titular_fk: Number(editFormData.id_titular_fk),
-      };
-
-      const res = await fetch(`${API_SOCIOS}/${editingId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        console.error(result);
-        throw new Error(result.message || "No se pudo actualizar el dependiente");
-      }
-
-      await cargarTodo();
-      closeEditModal();
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error al actualizar dependiente.");
-    } finally {
-      setSavingEdit(false);
-    }
-  };
-
-  const handleEliminarDependiente = async (id, nombre) => {
-    const confirmado = window.confirm(
-      `¿Seguro que deseas eliminar al dependiente "${nombre}"?`
-    );
-
-    if (!confirmado) return;
-
-    try {
-      setError("");
-
-      const res = await fetch(`${API_SOCIOS}/${id}`, {
-        method: "DELETE",
-        headers: { Accept: "application/json" },
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        console.error(result);
-        throw new Error(result.message || "No se pudo eliminar el dependiente");
-      }
-
-      await cargarTodo();
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error al eliminar dependiente.");
-    }
   };
 
   const dependientesFiltrados = useMemo(() => {
@@ -379,10 +154,17 @@ const Dependientes = () => {
     setSearchParams({});
   };
 
+  const abrirVistaDetalle = (dependiente) => {
+    setViewingDependiente(dependiente);
+    setShowViewModal(true);
+  };
+
+  const cerrarVistaDetalle = () => {
+    setViewingDependiente(null);
+    setShowViewModal(false);
+  };
+
   const titularActual = getTitularActual();
-  const titularFiltroEsIndividual =
-    titularActual &&
-    (titularActual.modalidad || "").toLowerCase() !== "familiar";
 
   return (
     <div className="space-y-6">
@@ -406,13 +188,6 @@ const Dependientes = () => {
             <X size={15} />
             Ver todos
           </button>
-        </div>
-      )}
-
-      {titularFiltroEsIndividual && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
-          El titular filtrado tiene modalidad <span className="font-semibold">Individual</span>.
-          No se le pueden registrar dependientes.
         </div>
       )}
 
@@ -496,6 +271,9 @@ const Dependientes = () => {
                 ? `Dependientes de ${titularActual.nombre}`
                 : "Directorio de dependientes"}
             </h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Consulta general de dependientes vinculados a socios titulares.
+            </p>
           </div>
 
           <button
@@ -583,25 +361,13 @@ const Dependientes = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => openEditModal(dep)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-500/20"
-                        >
-                          <Pencil size={15} />
-                          Editar
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            handleEliminarDependiente(dep.id_socio, dep.nombre)
-                          }
-                          className="inline-flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/20"
-                        >
-                          <Trash2 size={15} />
-                          Eliminar
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => abrirVistaDetalle(dep)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-500/20"
+                      >
+                        <Eye size={15} />
+                        Ver detalle
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -611,232 +377,121 @@ const Dependientes = () => {
         )}
       </section>
 
-      {showCreateModal && (
+      {showViewModal && viewingDependiente && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#14171c] p-6 shadow-2xl">
-            <h2 className="mb-6 text-2xl font-bold text-white">
-              Registrar dependiente
-            </h2>
-
-            <form
-              onSubmit={handleCreateDependiente}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
-              <div className="md:col-span-2">
-                <label className={labelClass}>Titular</label>
-                <select
-                  name="id_titular_fk"
-                  value={createFormData.id_titular_fk}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                >
-                  <option value="">Selecciona un titular</option>
-                  {titularesFamiliares.map((titular) => (
-                    <option key={titular.id_socio} value={titular.id_socio}>
-                      {titular.nombre} {titular.apellidos} (ID: {titular.id_socio})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#14171c] p-8 shadow-2xl">
+            <div className="mb-8 flex items-center justify-between border-b border-gray-800 pb-4">
               <div>
-                <label className={labelClass}>Nombre</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={createFormData.nombre}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                />
+                <h2 className="text-2xl font-bold text-white">
+                  Ficha del dependiente
+                </h2>
+                <p className="text-sm text-gray-400">
+                  ID: {viewingDependiente.id_socio}
+                </p>
               </div>
 
-              <div>
-                <label className={labelClass}>Apellidos</label>
-                <input
-                  type="text"
-                  name="apellidos"
-                  value={createFormData.apellidos}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                />
+              <button
+                onClick={cerrarVistaDetalle}
+                className="text-3xl text-gray-400 transition hover:text-white"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="space-y-4 rounded-xl border border-gray-800 bg-[#0f131a] p-5">
+                <h3 className="flex items-center gap-2 font-semibold text-blue-400">
+                  <Users size={18} /> Datos personales
+                </h3>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Nombre completo
+                  </p>
+                  <p className="font-medium text-white">
+                    {viewingDependiente.nombre} {viewingDependiente.apellidos}
+                  </p>
+
+                  <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Género
+                  </p>
+                  <p className="text-gray-300">
+                    {viewingDependiente.genero || "N/A"}
+                  </p>
+
+                  <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Fecha de nacimiento
+                  </p>
+                  <p className="text-gray-300">
+                    {viewingDependiente.fecha_nacimiento?.slice(0, 10) || "N/A"}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <label className={labelClass}>Fecha de nacimiento</label>
-                <input
-                  type="date"
-                  name="fecha_nacimiento"
-                  value={createFormData.fecha_nacimiento}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                />
+              <div className="space-y-4 rounded-xl border border-gray-800 bg-[#0f131a] p-5">
+                <h3 className="flex items-center gap-2 font-semibold text-violet-400">
+                  <Link2 size={18} /> Relación con titular
+                </h3>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Titular asociado
+                  </p>
+                  <p className="text-white">
+                    {getNombreTitular(viewingDependiente.id_titular_fk)}
+                  </p>
+
+                  <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Documento
+                  </p>
+                  <p className="text-gray-300">
+                    {viewingDependiente.numero_documento || "N/A"}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <label className={labelClass}>Género</label>
-                <select
-                  name="genero"
-                  value={createFormData.genero}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                  <option value="No especifica">No especifica</option>
-                </select>
+              <div className="space-y-4 rounded-xl border border-gray-800 bg-[#0f131a] p-5">
+                <h3 className="flex items-center gap-2 font-semibold text-emerald-400">
+                  <UserRound size={18} /> Estado
+                </h3>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Membresía
+                  </p>
+                  <p className="text-white">
+                    {viewingDependiente.tipo_membresia || "N/A"}
+                  </p>
+
+                  <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Modalidad
+                  </p>
+                  <p className="text-gray-300">
+                    {viewingDependiente.modalidad || "N/A"}
+                  </p>
+
+                  <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-500 italic">
+                    Estatus financiero
+                  </p>
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getStatusBadge(
+                      viewingDependiente.estatus_financiero
+                    )}`}
+                  >
+                    {viewingDependiente.estatus_financiero || "Sin estatus"}
+                  </span>
+                </div>
               </div>
+            </div>
 
-              <div className="md:col-span-2">
-                <label className={labelClass}>Número de documento</label>
-                <input
-                  type="text"
-                  name="numero_documento"
-                  value={createFormData.numero_documento}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                />
-              </div>
-
-              <div className="mt-4 flex justify-end gap-3 md:col-span-2">
-                <button
-                  type="button"
-                  onClick={closeCreateModal}
-                  className="rounded-lg border border-gray-700 bg-[#0f131a] px-4 py-2 text-sm font-semibold text-gray-300 transition hover:bg-[#1a2029] hover:text-white"
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={savingCreate || titularesFamiliares.length === 0}
-                  className="rounded-lg bg-yellow-400 px-4 py-2 text-sm font-bold text-black transition hover:bg-yellow-300 disabled:opacity-60"
-                >
-                  {savingCreate ? "Guardando..." : "Registrar dependiente"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#14171c] p-6 shadow-2xl">
-            <h2 className="mb-6 text-2xl font-bold text-white">
-              Editar dependiente
-            </h2>
-
-            <form
-              onSubmit={handleUpdateDependiente}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
-              <div className="md:col-span-2">
-                <label className={labelClass}>Titular</label>
-                <select
-                  name="id_titular_fk"
-                  value={editFormData.id_titular_fk}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                  required
-                >
-                  <option value="">Selecciona un titular</option>
-                  {titularesFamiliares.map((titular) => (
-                    <option key={titular.id_socio} value={titular.id_socio}>
-                      {titular.nombre} {titular.apellidos} (ID: {titular.id_socio})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>Nombre</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={editFormData.nombre}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Apellidos</label>
-                <input
-                  type="text"
-                  name="apellidos"
-                  value={editFormData.apellidos}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Fecha de nacimiento</label>
-                <input
-                  type="date"
-                  name="fecha_nacimiento"
-                  value={editFormData.fecha_nacimiento}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Género</label>
-                <select
-                  name="genero"
-                  value={editFormData.genero}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                  required
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                  <option value="No especifica">No especifica</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className={labelClass}>Número de documento</label>
-                <input
-                  type="text"
-                  name="numero_documento"
-                  value={editFormData.numero_documento}
-                  onChange={handleEditChange}
-                  className={fieldBaseClass}
-                />
-              </div>
-
-              <div className="mt-4 flex justify-end gap-3 md:col-span-2">
-                <button
-                  type="button"
-                  onClick={closeEditModal}
-                  className="rounded-lg border border-gray-700 bg-[#0f131a] px-4 py-2 text-sm font-semibold text-gray-300 transition hover:bg-[#1a2029] hover:text-white"
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={savingEdit || titularesFamiliares.length === 0}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-                >
-                  {savingEdit ? "Guardando..." : "Guardar cambios"}
-                </button>
-              </div>
-            </form>
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={cerrarVistaDetalle}
+                className="rounded-lg bg-gray-800 px-8 py-2 font-semibold text-white transition hover:bg-gray-700"
+              >
+                Cerrar ficha
+              </button>
+            </div>
           </div>
         </div>
       )}

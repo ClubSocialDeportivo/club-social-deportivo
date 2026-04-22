@@ -1,31 +1,29 @@
-import { UserPlus, UserRoundMinus, PlusCircle, Users } from "lucide-react";
+import {
+  RefreshCcw,
+  PlusCircle,
+  UserPlus,
+} from "lucide-react";
 
 export const headerActions = {
   "/socios": [
     {
-      label: "Añadir Socio",
-      icon: UserPlus,
-      action: () =>
-        window.dispatchEvent(new CustomEvent("open-add-socio-modal")),
-      color: "bg-yellow-400 text-black",
-    },
-    {
-      label: "Eliminar Socio",
-      icon: UserRoundMinus,
-      action: () =>
-        window.dispatchEvent(new CustomEvent("delete-selected-socios")),
+      label: "Recargar socios",
+      icon: RefreshCcw,
+      action: () => window.dispatchEvent(new CustomEvent("refresh-socios")),
       color: "bg-gray-800 text-white border border-gray-700",
     },
   ],
+
   "/dependientes": [
     {
-      label: "Añadir dependiente",
-      icon: Users,
+      label: "Recargar dependientes",
+      icon: RefreshCcw,
       action: () =>
-        window.dispatchEvent(new CustomEvent("open-add-dependiente-modal")),
-      color: "bg-yellow-400 text-black",
+        window.dispatchEvent(new CustomEvent("refresh-dependientes")),
+      color: "bg-gray-800 text-white border border-gray-700",
     },
   ],
+
   "/instalaciones": [
     {
       label: "Nuevo Recurso",
@@ -37,17 +35,14 @@ export const headerActions = {
   ],
 
   "/instructores": [
-  {
-    label: "Nuevo Instructor",
-    icon: UserPlus,
-    action: () => {
-      // Disparamos el evento que Instructores.jsx está escuchando
-      const evento = new CustomEvent('abrir-modal-instructor');
-      window.dispatchEvent(evento);
+    {
+      label: "Nuevo Instructor",
+      icon: UserPlus,
+      action: () => {
+        const evento = new CustomEvent("abrir-modal-instructor");
+        window.dispatchEvent(evento);
+      },
+      color: "bg-[#FACC15] text-black",
     },
-    color: "bg-[#FACC15] text-black" // Usando el amarillo de tu diseño
-  },
-],
-  // Si una ruta no está aquí, no aparecerán botones extra.
-
+  ],
 };

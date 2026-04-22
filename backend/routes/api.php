@@ -1,17 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\LudotecaController;
-use App\Http\Controllers\Api\CheckinsController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
+
+use App\Http\Controllers\Api\LudotecaController;
 use App\Http\Controllers\Api\SocioController;
 use App\Http\Controllers\TorneoController;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\InstalacionesController;
 use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\ReservasController;
 use App\Http\Controllers\Api\AsistenciasController;
+use App\Http\Controllers\Api\CheckinController;
+use App\Http\Controllers\Api\PagosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +29,7 @@ Route::get('/test-db', function () {
         'created_at' => now(),
         'updated_at' => now(),
     ]);
+
     return response()->json(['mensaje' => 'Insertado correctamente']);
 });
 
@@ -36,14 +39,14 @@ Route::get('/test', function () {
 
 /*
 |--------------------------------------------------------------------------
-| MÓDULO SOCIOS
+| MÓDULO SOCIOS Y DEPENDIENTES (SOLO LECTURA)
 |--------------------------------------------------------------------------
 */
 
-Route::apiResource('socios', SocioController::class);
-Route::patch('/socios/{id}/activar', [SocioController::class, 'activarMembresia']);
+Route::get('/socios', [SocioController::class, 'index']);
+Route::get('/socios/{id}', [SocioController::class, 'show']);
 Route::get('/dependientes', [SocioController::class, 'dependientes']);
-Route::get('/titulares',    [SocioController::class, 'titulares']);
+Route::get('/titulares', [SocioController::class, 'titulares']);
 Route::get('/socios/{id}/verificar-acceso', [SocioController::class, 'verificarAcceso']);
 
 /*
@@ -69,11 +72,11 @@ Route::post('/ludoteca/ingreso', [LudotecaController::class, 'registrarIngreso']
 |--------------------------------------------------------------------------
 */
 
-Route::get('/instalaciones',       [InstalacionesController::class, 'index']);
-Route::get('/instalaciones/{id}',  [InstalacionesController::class, 'show']);
-Route::post('/instalaciones',      [InstalacionesController::class, 'store']);
-Route::put('/instalaciones/{id}',  [InstalacionesController::class, 'update']);
-Route::get('/categorias',          [InstalacionesController::class, 'getCategories']);
+Route::get('/instalaciones', [InstalacionesController::class, 'index']);
+Route::get('/instalaciones/{id}', [InstalacionesController::class, 'show']);
+Route::post('/instalaciones', [InstalacionesController::class, 'store']);
+Route::put('/instalaciones/{id}', [InstalacionesController::class, 'update']);
+Route::get('/categorias', [InstalacionesController::class, 'getCategories']);
 
 /*
 |--------------------------------------------------------------------------
@@ -81,14 +84,14 @@ Route::get('/categorias',          [InstalacionesController::class, 'getCategori
 |--------------------------------------------------------------------------
 */
 
-Route::get('/agenda/catalogo/disciplinas',  [AgendaController::class, 'getDisciplinas']);
+Route::get('/agenda/catalogo/disciplinas', [AgendaController::class, 'getDisciplinas']);
 Route::get('/agenda/catalogo/instructores', [AgendaController::class, 'getInstructores']);
 
-Route::get('/agenda',        [AgendaController::class, 'index']);
-Route::get('/agenda/{id}',   [AgendaController::class, 'show']);
-Route::post('/agenda',       [AgendaController::class, 'store']);
-Route::put('/agenda/{id}',   [AgendaController::class, 'update']);
-Route::delete('/agenda/{id}',[AgendaController::class, 'destroy']);
+Route::get('/agenda', [AgendaController::class, 'index']);
+Route::get('/agenda/{id}', [AgendaController::class, 'show']);
+Route::post('/agenda', [AgendaController::class, 'store']);
+Route::put('/agenda/{id}', [AgendaController::class, 'update']);
+Route::delete('/agenda/{id}', [AgendaController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
@@ -96,17 +99,18 @@ Route::delete('/agenda/{id}',[AgendaController::class, 'destroy']);
 |--------------------------------------------------------------------------
 */
 
-Route::get('/reservas',         [ReservasController::class, 'index']);
-Route::get('/reservas/{id}',    [ReservasController::class, 'show']);
-Route::post('/reservas',        [ReservasController::class, 'store']);
-Route::put('/reservas/{id}',    [ReservasController::class, 'update']);
+Route::get('/reservas', [ReservasController::class, 'index']);
+Route::get('/reservas/{id}', [ReservasController::class, 'show']);
+Route::post('/reservas', [ReservasController::class, 'store']);
+Route::put('/reservas/{id}', [ReservasController::class, 'update']);
 Route::delete('/reservas/{id}', [ReservasController::class, 'destroy']);
 
 /*
-------------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | MÓDULO INSTRUCTORES
-------------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
+
 Route::apiResource('instructors', InstructorController::class);
 
 /*
@@ -114,36 +118,21 @@ Route::apiResource('instructors', InstructorController::class);
 | MÓDULO DE ASISTENCIAS
 |--------------------------------------------------------------------------
 */
- 
+
 Route::get('/asistencias/sesion/{id_sesion}', [AsistenciasController::class, 'porSesion']);
-Route::get('/asistencias',        [AsistenciasController::class, 'index']);
-Route::post('/asistencias',       [AsistenciasController::class, 'store']);
-Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
-Route::delete('/asistencias/{id}',[AsistenciasController::class, 'destroy']);
+Route::get('/asistencias', [AsistenciasController::class, 'index']);
+Route::post('/asistencias', [AsistenciasController::class, 'store']);
+Route::delete('/asistencias/{id}', [AsistenciasController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
 | MÓDULO DE CHECK-IN
 |--------------------------------------------------------------------------
 */
- 
-use App\Http\Controllers\Api\CheckinController;
- 
-// Buscar socio (debe ir ANTES de las rutas con parámetros)
+
 Route::get('/checkins/buscar', [CheckinController::class, 'buscarSocio']);
- 
-Route::get('/checkins',  [CheckinController::class, 'index']);
+Route::get('/checkins', [CheckinController::class, 'index']);
 Route::post('/checkins', [CheckinController::class, 'store']);
-
-
-
-
-
-
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -151,11 +140,7 @@ Route::post('/checkins', [CheckinController::class, 'store']);
 |--------------------------------------------------------------------------
 */
 
-use App\Http\Controllers\Api\PagosController;
-
-// Catálogo (debe ir ANTES de /{id})
 Route::get('/pagos/metodos', [PagosController::class, 'getMetodos']);
-
-Route::get('/pagos',        [PagosController::class, 'index']);
-Route::get('/pagos/{id}',   [PagosController::class, 'show']);
-Route::post('/pagos',       [PagosController::class, 'store']);
+Route::get('/pagos', [PagosController::class, 'index']);
+Route::get('/pagos/{id}', [PagosController::class, 'show']);
+Route::post('/pagos', [PagosController::class, 'store']);
