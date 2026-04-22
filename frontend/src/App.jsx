@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import DashboardInstructor from './pages/DashboardInstructor';
 import Recepcion from "./pages/Recepcion";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
@@ -21,6 +22,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route index element={<RedirectByRole />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard-instructor" element={<DashboardInstructor />} />
           <Route path="/instalaciones" element={<Instalaciones />} />
           <Route path="/recepcion" element={<Recepcion />} />
           <Route path="/socios" element={<Socios />} />

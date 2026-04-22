@@ -9,6 +9,7 @@ import {
   BellRing,
   BellPlus,
   Banknote,
+  Activity,
 } from "lucide-react";
 
 // Fuente central de navegación
@@ -18,6 +19,12 @@ export const MenuItems = [
     icon: LayoutDashboard,
     path: "/dashboard",
     roles: ["admin", "instructor"],
+  },
+  {
+    title: "Mi Rendimiento",
+    icon: Activity,
+    path: "/dashboard-instructor",
+    roles: ["instructor", "admin"], 
   },
   {
     title: "Instalaciones",

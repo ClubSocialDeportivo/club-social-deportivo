@@ -37,4 +37,16 @@ class Agenda extends Model
     {
         return $this->belongsTo(Instalaciones::class, 'id_espacio', 'id_espacio');
     }
+
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class, 'id_sesion', 'id_sesion');
+    }
+
+    protected $appends = ['asistentes_count'];
+
+    public function getAsistentesCountAttribute()
+    {
+        return $this->asistencias()->count();
+    }
 }

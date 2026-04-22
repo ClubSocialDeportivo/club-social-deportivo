@@ -14,7 +14,7 @@ class AgendaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Agenda::with(['disciplina', 'instructor', 'espacio']);
+        $query = Agenda::with(['disciplina', 'instructor', 'espacio', 'asistencias.socio']);
 
         if ($request->filled('id_instructor')) {
             $query->where('id_instructor', $request->id_instructor);
@@ -34,7 +34,7 @@ class AgendaController extends Controller
      */
     public function show($id)
     {
-        $sesion = Agenda::with(['disciplina', 'instructor', 'espacio'])
+        $sesion = Agenda::with(['disciplina', 'instructor', 'espacio', 'asistencias.socio'])
             ->findOrFail($id);
 
         return response()->json([
