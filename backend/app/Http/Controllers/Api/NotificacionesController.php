@@ -3,23 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Notificacion;
+use Illuminate\Http\Request;
 
 class NotificacionesController extends Controller
 {
-    /**
-     * GET /api/mis-notificaciones?id_socio=#
-     */
     public function index(Request $request)
     {
         $idSocio = $request->query('id_socio');
 
-        if (!$idSocio) {
+        if (! $idSocio) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'id_socio es requerido'
-            ], 400);
+                'message' => 'id_socio es requerido.',
+            ], 422);
         }
 
         $notificaciones = Notificacion::where('id_socio', $idSocio)
@@ -28,24 +25,19 @@ class NotificacionesController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $notificaciones
+            'data' => $notificaciones,
         ]);
     }
 
-    /**
-     * PUT /api/notificaciones/{id}/leer
-     */
     public function marcarComoLeido($id)
     {
         $notificacion = Notificacion::findOrFail($id);
 
-        $notificacion->update([
-            'leido_boolean' => true
-        ]);
+        $notificacion->marcarComoLeida();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Notificación marcada como leída'
+            'message' => 'Notificación marcada como leída',
         ]);
     }
 }
