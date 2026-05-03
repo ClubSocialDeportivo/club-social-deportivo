@@ -83,7 +83,8 @@ Route::middleware(['restrict.instructor'])->group(function () {
     // MÓDULO DE ACTIVIDADES — RESERVAS
     Route::get('/reservas',         [ReservasController::class, 'index']);
     Route::get('/reservas/{id}',    [ReservasController::class, 'show']);
-    Route::post('/reservas',        [ReservasController::class, 'store']);
+    Route::post('/reservas', [ReservasController::class, 'store'])
+    ->middleware('bloquear.sancionado');
     Route::put('/reservas/{id}',    [ReservasController::class, 'update']);
     Route::delete('/reservas/{id}', [ReservasController::class, 'destroy']);
     
