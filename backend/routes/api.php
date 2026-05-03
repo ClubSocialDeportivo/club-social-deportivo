@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\AsistenciasController;
 use App\Http\Controllers\Api\CheckinController;
 use App\Http\Controllers\Api\PagosController;
 use App\Http\Controllers\Api\InstructorDashboardController;
+use App\Http\Controllers\Api\NotificacionesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,3 +123,6 @@ Route::post('/ludoteca/salida', [LudotecaController::class, 'registrarSalida']);
 Route::get('/checkins/buscar', [CheckinController::class, 'buscarSocio']);
 Route::get('/checkins',  [CheckinController::class, 'index']);
 Route::post('/checkins', [CheckinController::class, 'store']);
+
+Route::get('/mis-notificaciones', [NotificacionesController::class, 'index']);
+Route::put('/notificaciones/{id}/leer', [NotificacionesController::class, 'marcarComoLeido']);
