@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeSocio;
 use App\Models\Socio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class SocioController extends Controller
@@ -45,6 +49,8 @@ class SocioController extends Controller
             ],
             'nombre' => 'required|string|max:100',
             'apellidos' => 'required|string|max:120',
+            'correo' => 'nullable|email|max:255|unique:tbl_socios,correo',
+            'telefono' => 'nullable|string|max:20',
             'fecha_nacimiento' => 'required|date',
             'genero' => [
                 'required',
@@ -126,6 +132,18 @@ class SocioController extends Controller
         }
 
         $socio = Socio::create($validated);
+
+        if ($socio->correo && $socio->es_titular) {
+            $token = Str::random(60);
+
+            DB::table('password_reset_tokens')->insert([
+                'email' => $socio->correo,
+                'token' => hash('sha256', $token),
+                'created_at' => now(),
+            ]);
+
+            Mail::to($socio->correo)->send(new WelcomeSocio($token, $socio->correo, $socio->nombre));
+        }
 
         return response()->json([
             'message' => 'Socio creado correctamente',

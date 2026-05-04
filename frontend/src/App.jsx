@@ -4,7 +4,7 @@ import Recepcion from "./pages/Recepcion";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Socios from "./pages/Socios";
-import CheckIn from "./pages/CheckIn";
+import CheckIn from "./pages/Checkin";
 import Instalaciones from "./pages/Instalaciones";
 import Dependientes from "./pages/Dependientes";
 import Instructores from "./pages/Instructores";
@@ -14,11 +14,13 @@ import Pagos from "./pages/Pagos";
 import Torneos from "./pages/Torneos";
 import CalendarioInstructor from "./pages/CalendarioInstructor";
 import RedirectByRole from "./components/RedirectByRole";
+import SetPassword from "./pages/SetPassword";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/set-password" element={<SetPassword />} />
         <Route element={<MainLayout />}>
           <Route index element={<RedirectByRole />} />
           <Route path="/dashboard" element={<Dashboard />} />

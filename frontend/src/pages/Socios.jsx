@@ -30,14 +30,10 @@ const initialEditForm = {
 const initialCreateForm = {
   nombre: "",
   apellidos: "",
-  fecha_nacimiento: "",
-  genero: "",
+  correo: "",
+  telefono: "",
   tipo_membresia: "",
   modalidad: "",
-  estatus_financiero: "",
-  numero_documento: "",
-  fecha_inicio_vigencia: "",
-  fecha_fin_vigencia: "",
 };
 
 const fieldBaseClass =
@@ -217,12 +213,15 @@ const Socios = () => {
       const payload = {
         ...createFormData,
         id_usuario: null,
-        numero_documento: createFormData.numero_documento || null,
-        fecha_inicio_vigencia: createFormData.fecha_inicio_vigencia || null,
-        fecha_fin_vigencia: createFormData.fecha_fin_vigencia || null,
+        fecha_nacimiento: new Date().toISOString().split("T")[0],
+        genero: "No especifica",
+        estatus_financiero: "Vigente",
+        numero_documento: null,
+        fecha_inicio_vigencia: new Date().toISOString().split("T")[0],
+        fecha_fin_vigencia: null,
         es_titular: true,
         id_titular_fk: null,
-        activo: createFormData.estatus_financiero === "Vigente",
+        activo: true,
       };
 
       const res = await fetch(API_URL, {
@@ -794,32 +793,29 @@ const Socios = () => {
               </div>
 
               <div>
-                <label className={labelClass}>Fecha de nacimiento</label>
+                <label className={labelClass}>Correo electrónico</label>
                 <input
-                  type="date"
-                  name="fecha_nacimiento"
-                  value={createFormData.fecha_nacimiento}
+                  type="email"
+                  name="correo"
+                  value={createFormData.correo}
                   onChange={handleCreateChange}
                   className={fieldBaseClass}
                   required
+                  placeholder="socio@ejemplo.com"
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Género</label>
-                <select
-                  name="genero"
-                  value={createFormData.genero}
+                <label className={labelClass}>Teléfono</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={createFormData.telefono}
                   onChange={handleCreateChange}
                   className={fieldBaseClass}
                   required
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                  <option value="No especifica">No especifica</option>
-                </select>
+                  placeholder="+1 809 000 0000"
+                />
               </div>
 
               <div>
@@ -851,60 +847,6 @@ const Socios = () => {
                   <option value="Familiar">Familiar</option>
                 </select>
               </div>
-
-              <div>
-                <label className={labelClass}>Estatus financiero</label>
-                <select
-                  name="estatus_financiero"
-                  value={createFormData.estatus_financiero}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                  required
-                >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Vigente">Vigente</option>
-                  <option value="Inactivo">Inactivo</option>
-                  <option value="Adeudo">Adeudo</option>
-                  <option value="Suspendido">Suspendido</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>Número de documento</label>
-                <input
-                  type="text"
-                  name="numero_documento"
-                  value={createFormData.numero_documento}
-                  onChange={handleCreateChange}
-                  className={fieldBaseClass}
-                />
-              </div>
-
-              {showCreateVigencia && (
-                <>
-                  <div>
-                    <label className={labelClass}>Fecha inicio vigencia</label>
-                    <input
-                      type="date"
-                      name="fecha_inicio_vigencia"
-                      value={createFormData.fecha_inicio_vigencia}
-                      onChange={handleCreateChange}
-                      className={fieldBaseClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Fecha fin vigencia</label>
-                    <input
-                      type="date"
-                      name="fecha_fin_vigencia"
-                      value={createFormData.fecha_fin_vigencia}
-                      onChange={handleCreateChange}
-                      className={fieldBaseClass}
-                    />
-                  </div>
-                </>
-              )}
 
               <div className="mt-4 flex justify-end gap-3 md:col-span-2">
                 <button
