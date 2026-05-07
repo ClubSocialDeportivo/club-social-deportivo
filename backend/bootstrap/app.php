@@ -12,8 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Registramos el alias de tu nuevo middleware aquí
         $middleware->alias([
+            'bloquear.sancionado' => \App\Http\Middleware\BloquearSocioSancionado::class,
             'restrict.instructor' => \App\Http\Middleware\RestrictInstructorAccess::class,
         ]);
     })
