@@ -58,6 +58,7 @@ const Socios = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createFormData, setCreateFormData] = useState(initialCreateForm);
   const [savingCreate, setSavingCreate] = useState(false);
+  const [createError, setCreateError] = useState("");
   const [showCheckInModal, setShowCheckInModal] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -150,12 +151,14 @@ const Socios = () => {
 
   const openCreateModal = () => {
     setCreateFormData(initialCreateForm);
+    setCreateError("");
     setShowCreateModal(true);
   };
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setCreateFormData(initialCreateForm);
+    setCreateError("");
   };
 
   const openEditModal = (socio) => {
@@ -193,6 +196,7 @@ const Socios = () => {
       ...prev,
       [name]: value,
     }));
+    if (name === 'correo') setCreateError("");
   };
 
   const handleEditChange = (e) => {
@@ -208,7 +212,7 @@ const Socios = () => {
 
     try {
       setSavingCreate(true);
-      setError("");
+      setCreateError("");
 
       const payload = {
         ...createFormData,
@@ -237,6 +241,10 @@ const Socios = () => {
 
       if (!res.ok) {
         console.error("Error al registrar socio:", result);
+        if (result.errors) {
+          const mensajes = Object.values(result.errors).flat().join(". ");
+          throw new Error(mensajes || result.message || "No se pudo registrar el socio");
+        }
         throw new Error(result.message || "No se pudo registrar el socio");
       }
 
@@ -244,7 +252,7 @@ const Socios = () => {
       closeCreateModal();
     } catch (err) {
       console.error("Error al registrar socio:", err);
-      setError(err.message || "Error al registrar socio.");
+      setCreateError(err.message || "Error al registrar socio.");
     } finally {
       setSavingCreate(false);
     }
@@ -764,6 +772,12 @@ const Socios = () => {
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#14171c] p-6 shadow-2xl">
             <h2 className="mb-6 text-2xl font-bold text-white">Registrar socio</h2>
 
+            {createError && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 mb-4">
+                {createError}
+              </div>
+            )}
+
             <form
               onSubmit={handleCreateSocio}
               className="grid grid-cols-1 gap-4 md:grid-cols-2"
@@ -793,13 +807,13 @@ const Socios = () => {
               </div>
 
               <div>
-                <label className={labelClass}>Correo electrónico</label>
+                <label className={`${labelClass} ${createError.toLowerCase().includes('correo') ? 'text-red-400' : ''}`}>Correo electrónico</label>
                 <input
                   type="email"
                   name="correo"
                   value={createFormData.correo}
                   onChange={handleCreateChange}
-                  className={fieldBaseClass}
+                  className={`${fieldBaseClass} ${createError.toLowerCase().includes('correo') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
                   required
                   placeholder="socio@ejemplo.com"
                 />
