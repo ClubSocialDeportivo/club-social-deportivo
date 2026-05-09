@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\CheckinController;
 use App\Http\Controllers\Api\PagosController;
 use App\Http\Controllers\Api\InstructorDashboardController;
 use App\Http\Controllers\Api\ConfirmPasswordController;
+use App\Http\Controllers\Api\NotificacionesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,7 +87,8 @@ Route::middleware(['restrict.instructor'])->group(function () {
     // MÓDULO DE ACTIVIDADES — RESERVAS
     Route::get('/reservas',         [ReservasController::class, 'index']);
     Route::get('/reservas/{id}',    [ReservasController::class, 'show']);
-    Route::post('/reservas',        [ReservasController::class, 'store']);
+    Route::post('/reservas', [ReservasController::class, 'store'])
+    ->middleware('bloquear.sancionado');
     Route::put('/reservas/{id}',    [ReservasController::class, 'update']);
     Route::delete('/reservas/{id}', [ReservasController::class, 'destroy']);
     
@@ -124,3 +126,6 @@ Route::post('/ludoteca/salida', [LudotecaController::class, 'registrarSalida']);
 Route::get('/checkins/buscar', [CheckinController::class, 'buscarSocio']);
 Route::get('/checkins',  [CheckinController::class, 'index']);
 Route::post('/checkins', [CheckinController::class, 'store']);
+
+Route::get('/mis-notificaciones', [NotificacionesController::class, 'index']);
+Route::put('/notificaciones/{id}/leer', [NotificacionesController::class, 'marcarComoLeido']);

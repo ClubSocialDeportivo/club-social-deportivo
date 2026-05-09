@@ -29,6 +29,7 @@ class Socio extends Model
         'es_titular',
         'id_titular_fk',
         'activo',
+        'faltas',
     ];
 
     protected $casts = [
@@ -37,5 +38,6 @@ class Socio extends Model
         'fecha_fin_vigencia' => 'date',
         'es_titular' => 'boolean',
         'activo' => 'boolean',
+        'faltas' => 'integer',
     ];
 }

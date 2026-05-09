@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'bloquear.sancionado' => \App\Http\Middleware\BloquearSocioSancionado::class,
             'restrict.instructor' => \App\Http\Middleware\RestrictInstructorAccess::class,
         ]);
         $middleware->prepend(\App\Http\Middleware\CorsMiddleware::class);
