@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\AsistenciasController;
 use App\Http\Controllers\Api\CheckinController;
 use App\Http\Controllers\Api\PagosController;
 use App\Http\Controllers\Api\InstructorDashboardController;
+use App\Http\Controllers\Api\ConfirmPasswordController;
 use App\Http\Controllers\Api\NotificacionesController;
 
 /*
@@ -56,6 +57,8 @@ Route::get('/pagos',        [PagosController::class, 'index']);
 Route::get('/pagos/{id}',   [PagosController::class, 'show']);
 
 Route::get('/torneos', [TorneoController::class, 'index']);
+
+Route::post('/confirmar-password', [ConfirmPasswordController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
