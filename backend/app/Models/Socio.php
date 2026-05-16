@@ -40,4 +40,9 @@ class Socio extends Model
         'activo' => 'boolean',
         'faltas' => 'integer',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'id_usuario', 'id_usuario');
+    }
 }

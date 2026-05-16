@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\PagosController;
 use App\Http\Controllers\Api\InstructorDashboardController;
 use App\Http\Controllers\Api\ConfirmPasswordController;
 use App\Http\Controllers\Api\NotificacionesController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SocioPortalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -129,3 +131,12 @@ Route::post('/checkins', [CheckinController::class, 'store']);
 
 Route::get('/mis-notificaciones', [NotificacionesController::class, 'index']);
 Route::put('/notificaciones/{id}/leer', [NotificacionesController::class, 'marcarComoLeido']);
+
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/socio/perfil', [SocioPortalController::class, 'perfil']);
+});
